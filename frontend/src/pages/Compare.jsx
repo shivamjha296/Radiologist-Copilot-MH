@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { GitCompare, Upload, ArrowRight, CheckCircle, AlertTriangle } from 'lucide-react'
 import toast, { Toaster } from 'react-hot-toast'
 
-export default function Compare(){
+export default function Compare() {
   const [imageA, setImageA] = useState(null)
   const [imageB, setImageB] = useState(null)
   const [fileA, setFileA] = useState(null)
@@ -12,7 +12,7 @@ export default function Compare(){
 
   const handleFileA = (e) => {
     const file = e.target.files[0]
-    if(file) {
+    if (file) {
       setFileA(file.name)
       setImageA(URL.createObjectURL(file))
       setResult(null)
@@ -22,7 +22,7 @@ export default function Compare(){
 
   const handleFileB = (e) => {
     const file = e.target.files[0]
-    if(file) {
+    if (file) {
       setFileB(file.name)
       setImageB(URL.createObjectURL(file))
       setResult(null)
@@ -31,34 +31,23 @@ export default function Compare(){
   }
 
   const compareImages = () => {
-    if(!imageA || !imageB) {
+    if (!imageA || !imageB) {
       toast.error('Please upload both X-rays')
       return
     }
 
     setComparing(true)
+    // TODO: Connect to backend comparison API
     setTimeout(() => {
-      setResult({
-        changes: [
-          { area: 'Right Lower Lobe', change: 'Increased opacity', severity: 'Moderate', trend: 'worsened' },
-          { area: 'Cardiac Silhouette', change: 'Size unchanged', severity: 'Stable', trend: 'stable' },
-          { area: 'Left Lung Field', change: 'Improved clarity', severity: 'Mild', trend: 'improved' },
-          { area: 'Pleural Space', change: 'No effusion detected', severity: 'Normal', trend: 'stable' }
-        ],
-        summary: 'Comparison shows progression of infiltrate in right lower lobe. Left lung shows improvement. Cardiac size remains stable.',
-        recommendation: 'Continue current treatment and schedule follow-up in 2 weeks.',
-        timeDifference: '14 days',
-        confidence: 88
-      })
       setComparing(false)
-      toast.success('Comparison complete!')
-    }, 2500)
+      toast('Comparison feature coming soon!', { icon: '🚧' })
+    }, 1000)
   }
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <Toaster position="top-right"/>
-      
+      <Toaster position="top-right" />
+
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-6">
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -69,7 +58,7 @@ export default function Compare(){
                 Earlier Scan
               </h3>
               <label className="block border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
-                <Upload className="mx-auto mb-3 text-gray-400" size={40}/>
+                <Upload className="mx-auto mb-3 text-gray-400" size={40} />
                 <div className="text-sm text-gray-600 mb-2">Upload first X-ray</div>
                 <div className="text-xs text-gray-400">PNG, JPG (max 10MB)</div>
                 <input type="file" onChange={handleFileA} accept="image/*" className="hidden" />
@@ -89,7 +78,7 @@ export default function Compare(){
                 Recent Scan
               </h3>
               <label className="block border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition">
-                <Upload className="mx-auto mb-3 text-gray-400" size={40}/>
+                <Upload className="mx-auto mb-3 text-gray-400" size={40} />
                 <div className="text-sm text-gray-600 mb-2">Upload second X-ray</div>
                 <div className="text-xs text-gray-400">PNG, JPG (max 10MB)</div>
                 <input type="file" onChange={handleFileB} accept="image/*" className="hidden" />
@@ -105,7 +94,7 @@ export default function Compare(){
 
           {/* Compare Button */}
           <div className="flex justify-center">
-            <button 
+            <button
               onClick={compareImages}
               disabled={!imageA || !imageB || comparing}
               className="px-8 py-3 bg-teal-600 text-white rounded-lg flex items-center gap-3 hover:bg-teal-700 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium text-lg shadow-lg"
@@ -119,7 +108,7 @@ export default function Compare(){
           {/* Results */}
           {result && (
             <div className="bg-white rounded-lg shadow-sm border p-6">
-                <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-semibold">Comparison Results</h3>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-slate-600">Time difference:</span>
@@ -132,14 +121,13 @@ export default function Compare(){
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-semibold text-gray-800">{change.area}</span>
-                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                            change.trend === 'improved' ? 'bg-green-100 text-green-700' :
-                            change.trend === 'worsened' ? 'bg-red-100 text-red-700' :
-                            'bg-gray-200 text-gray-700'
-                          }`}>
-                            {change.trend === 'improved' ? '↑ Improved' : 
-                             change.trend === 'worsened' ? '↓ Worsened' : 
-                             '→ Stable'}
+                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${change.trend === 'improved' ? 'bg-green-100 text-green-700' :
+                              change.trend === 'worsened' ? 'bg-red-100 text-red-700' :
+                                'bg-gray-200 text-gray-700'
+                            }`}>
+                            {change.trend === 'improved' ? '↑ Improved' :
+                              change.trend === 'worsened' ? '↓ Worsened' :
+                                '→ Stable'}
                           </span>
                         </div>
                         <div className="text-sm text-gray-600 mb-1">{change.change}</div>

@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Optional, List
 from sqlalchemy import String, Integer, Text, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from pgvector.sqlalchemy import Vector
+# from pgvector.sqlalchemy import Vector
 
 
 class Base(DeclarativeBase):
@@ -71,8 +71,8 @@ class Report(Base):
                                              comment="Summary and conclusion")
     ner_tags: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True, 
                                                        comment="Named Entity Recognition tags (JSONB)")
-    embedding: Mapped[Optional[List[float]]] = mapped_column(Vector(1536), nullable=True, 
-                                                               comment="Text embedding for semantic search")
+    # embedding: Mapped[Optional[List[float]]] = mapped_column(Vector(1536), nullable=True, 
+    #                                                            comment="Text embedding for semantic search")
 
     # Relationships
     scan: Mapped["Scan"] = relationship("Scan", back_populates="reports")

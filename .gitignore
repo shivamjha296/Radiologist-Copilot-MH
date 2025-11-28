@@ -59,6 +59,10 @@ temp/
 *.log
 logs/
 
+# Generated Reports and Data
+reports/
+training_data/
+
 # OS
 Thumbs.db
 .DS_Store
