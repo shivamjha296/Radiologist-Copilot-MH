@@ -28,22 +28,24 @@ class Patient(Base):
 
     # Relationships
     scans: Mapped[List["Scan"]] = relationship("Scan", back_populates="patient", cascade="all, delete-orphan")
+    documents: Mapped[List["PatientDocument"]] = relationship("PatientDocument", back_populates="patient", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Patient(id={self.id}, mrn={self.mrn}, name={self.name})>"
 
 
 class Scan(Base):
-    """Medical imaging scan metadata"""
+    """Medical imaging scan metadata with Cloudinary URL"""
     __tablename__ = "scans"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     patient_id: Mapped[int] = mapped_column(Integer, ForeignKey("patients.id", ondelete="CASCADE"), 
                                              nullable=False, index=True)
-    file_path: Mapped[str] = mapped_column(String(500), nullable=False)
+    file_url: Mapped[str] = mapped_column(String(500), nullable=False,
+                                           comment="Cloudinary HTTPS URL for X-ray image")
     body_part: Mapped[str] = mapped_column(String(100), nullable=False, 
                                             comment="e.g., CHEST, ABDOMEN, HEAD")
-    view_position: Mapped[str] = mapped_column(String(50), nullable=False, 
+    view_position: Mapped[str] = mapped_column(String(50), default="PA", nullable=False, 
                                                  comment="e.g., PA, AP, LATERAL")
     modality: Mapped[str] = mapped_column(String(10), default="DX", nullable=False, 
                                            comment="DX=Digital Radiography")
@@ -55,6 +57,28 @@ class Scan(Base):
 
     def __repr__(self):
         return f"<Scan(id={self.id}, patient_id={self.patient_id}, body_part={self.body_part})>"
+
+
+class PatientDocument(Base):
+    """Patient documents (PDFs, lab reports, etc.) stored in Cloudinary"""
+    __tablename__ = "patient_documents"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    patient_id: Mapped[int] = mapped_column(Integer, ForeignKey("patients.id", ondelete="CASCADE"),
+                                             nullable=False, index=True)
+    document_name: Mapped[str] = mapped_column(String(200), nullable=False,
+                                                comment="e.g., 'Blood Work 2023', 'MRI Report'")
+    document_type: Mapped[str] = mapped_column(String(50), nullable=False,
+                                                comment="e.g., 'PDF', 'LAB', 'REPORT'")
+    file_url: Mapped[str] = mapped_column(String(500), nullable=False,
+                                           comment="Cloudinary HTTPS URL for document")
+    uploaded_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+
+    # Relationships
+    patient: Mapped["Patient"] = relationship("Patient", back_populates="documents")
+
+    def __repr__(self):
+        return f"<PatientDocument(id={self.id}, patient_id={self.patient_id}, name={self.document_name})>"
 
 
 class Report(Base):
