@@ -34,3 +34,7 @@ scipy>=1.11.4
 
 # Utilities
 python-dotenv>=1.0.0
+
+# Additional for deployment
+gunicorn>=21.2.0
+requests>=2.31.0
