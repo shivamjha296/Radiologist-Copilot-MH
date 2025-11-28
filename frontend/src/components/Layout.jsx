@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Home, MessageSquare, Image, FileText, GitCompare, Users, Sparkles, Menu, X, LogOut, ChevronDown, User } from 'lucide-react'
+import { Home, Image, FileText, GitCompare, Users, Sparkles, Menu, X, LogOut, ChevronDown, User } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 
@@ -8,7 +8,7 @@ export default function Layout({ children }){
   const loc = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuth()
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showLogoutMenu, setShowLogoutMenu] = useState(false)
   
   return (
@@ -32,16 +32,13 @@ export default function Layout({ children }){
         <div className="flex-1 overflow-y-auto p-4">
           <nav className="space-y-1">
             <Link to="/" className={`flex items-center gap-3 p-3 rounded-lg transition ${loc.pathname === '/' ? 'bg-teal-600 text-white font-medium shadow-md' : 'hover:bg-slate-700 text-slate-300 hover:text-white'}`}>
-              <MessageSquare size={20}/> Agentic Chat
+              <Users size={20}/> Patients
             </Link>
             <Link to="/xray" className={`flex items-center gap-3 p-3 rounded-lg transition ${loc.pathname === '/xray' ? 'bg-teal-600 text-white font-medium shadow-md' : 'hover:bg-slate-700 text-slate-300 hover:text-white'}`}>
               <Image size={20}/> X-ray Analysis
             </Link>
             <Link to="/compare" className={`flex items-center gap-3 p-3 rounded-lg transition ${loc.pathname === '/compare' ? 'bg-teal-600 text-white font-medium shadow-md' : 'hover:bg-slate-700 text-slate-300 hover:text-white'}`}>
               <GitCompare size={20}/> Compare X-rays
-            </Link>
-            <Link to="/patients" className={`flex items-center gap-3 p-3 rounded-lg transition ${loc.pathname === '/patients' ? 'bg-teal-600 text-white font-medium shadow-md' : 'hover:bg-slate-700 text-slate-300 hover:text-white'}`}>
-              <Users size={20}/> Patients
             </Link>
             <Link to="/reports" className={`flex items-center gap-3 p-3 rounded-lg transition ${loc.pathname === '/reports' ? 'bg-teal-600 text-white font-medium shadow-md' : 'hover:bg-slate-700 text-slate-300 hover:text-white'}`}>
               <FileText size={20}/> Reports

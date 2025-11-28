@@ -5,64 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 
 // Sample patient reports data
-const patientReports = [
-  {
-    id: 1,
-    reportNumber: 'Report 1',
-    title: 'Chest X-Ray Analysis',
-    date: 'November 28, 2024',
-    time: '14:30',
-    diagnosis: 'Normal Study',
-    doctor: 'Dr. Anjali Desai',
-    status: 'Completed',
-    xrayImage: '/api/placeholder/400/400',
-    findings: 'The chest X-ray shows normal lung fields with no signs of pneumonia, consolidation, or other abnormalities. Heart size is within normal limits. No pleural effusion or pneumothorax observed.',
-    recommendations: 'No immediate follow-up required. Continue routine health maintenance.',
-    summary: 'This is a normal chest X-ray study with no abnormal findings.'
-  },
-  {
-    id: 2,
-    reportNumber: 'Report 2',
-    title: 'Follow-up Chest X-Ray',
-    date: 'November 15, 2024',
-    time: '10:15',
-    diagnosis: 'Mild Pneumonia (Left Lower Lobe)',
-    doctor: 'Dr. Vikram Singh',
-    status: 'Completed',
-    xrayImage: '/api/placeholder/400/400',
-    findings: 'There is a small area of consolidation in the left lower lobe consistent with pneumonia. Heart size is normal. No pleural effusion. Right lung appears clear.',
-    recommendations: 'Continue antibiotic treatment as prescribed. Follow-up X-ray in 2-3 weeks to monitor resolution.',
-    summary: 'Mild pneumonia in left lower lobe, responding well to treatment.'
-  },
-  {
-    id: 3,
-    reportNumber: 'Report 3',
-    title: 'Pre-Surgery Chest X-Ray',
-    date: 'October 22, 2024',
-    time: '09:00',
-    diagnosis: 'Clear for Surgery',
-    doctor: 'Dr. Anjali Desai',
-    status: 'Completed',
-    xrayImage: '/api/placeholder/400/400',
-    findings: 'Pre-operative chest X-ray demonstrates clear lung fields bilaterally. No acute cardiopulmonary abnormalities. Cardiac silhouette is within normal limits.',
-    recommendations: 'Patient cleared for scheduled surgical procedure from respiratory standpoint.',
-    summary: 'Normal pre-operative chest X-ray, patient cleared for surgery.'
-  },
-  {
-    id: 4,
-    reportNumber: 'Report 4',
-    title: 'Post-Treatment X-Ray',
-    date: 'September 10, 2024',
-    time: '16:45',
-    diagnosis: 'Resolved Pneumonia',
-    doctor: 'Dr. Vikram Singh',
-    status: 'Completed',
-    xrayImage: '/api/placeholder/400/400',
-    findings: 'Follow-up chest X-ray shows complete resolution of previously seen left lower lobe pneumonia. Both lungs appear clear with no residual consolidation.',
-    recommendations: 'No further follow-up required. Return if symptoms recur.',
-    summary: 'Complete resolution of pneumonia, treatment successful.'
-  }
-]
+const patientReports = []
 
 export default function PatientDashboard() {
   const navigate = useNavigate()
@@ -107,7 +50,7 @@ export default function PatientDashboard() {
         <div className="px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center shadow-md">
-              <User className="text-white" size={20}/>
+              <User className="text-white" size={20} />
             </div>
             <div>
               <div className="text-lg font-bold text-gray-800">Patient Portal</div>
@@ -166,7 +109,7 @@ export default function PatientDashboard() {
         {/* Reports Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {patientReports.map((report) => (
-            <div 
+            <div
               key={report.id}
               onClick={() => handleReportClick(report)}
               className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-100 hover:border-teal-200 transform hover:-translate-y-1"
@@ -260,7 +203,7 @@ export default function PatientDashboard() {
                 <input
                   type="text"
                   value={profileData.name}
-                  onChange={(e) => setProfileData({...profileData, name: e.target.value})}
+                  onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                   placeholder="Enter your full name"
                 />
@@ -274,7 +217,7 @@ export default function PatientDashboard() {
                 <input
                   type="email"
                   value={profileData.email}
-                  onChange={(e) => setProfileData({...profileData, email: e.target.value})}
+                  onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                   placeholder="Enter your email"
                 />
@@ -288,7 +231,7 @@ export default function PatientDashboard() {
                 <input
                   type="tel"
                   value={profileData.phone}
-                  onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
+                  onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                   placeholder="Enter your phone number"
                 />
@@ -302,7 +245,7 @@ export default function PatientDashboard() {
                 <input
                   type="number"
                   value={profileData.age}
-                  onChange={(e) => setProfileData({...profileData, age: e.target.value})}
+                  onChange={(e) => setProfileData({ ...profileData, age: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                   placeholder="Enter your age"
                   min="1"
@@ -317,7 +260,7 @@ export default function PatientDashboard() {
                 </label>
                 <select
                   value={profileData.gender}
-                  onChange={(e) => setProfileData({...profileData, gender: e.target.value})}
+                  onChange={(e) => setProfileData({ ...profileData, gender: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                 >
                   <option value="Male">Male</option>
@@ -333,7 +276,7 @@ export default function PatientDashboard() {
                 </label>
                 <textarea
                   value={profileData.address}
-                  onChange={(e) => setProfileData({...profileData, address: e.target.value})}
+                  onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                   placeholder="Enter your address"
                   rows="3"

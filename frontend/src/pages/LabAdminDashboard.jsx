@@ -4,18 +4,9 @@ import { Search, Plus, Edit, Trash2, Users, ChevronDown, LogOut } from 'lucide-r
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 
-const initialPatients = [
-  { id: 'NSSH.1215787', name: 'Anand Bineet Birendra Kumar', age: 31, diagnosis: 'Pneumonia (Left cardiac shadow)', status: 'Active', lastVisit: 'Sep 3, 2024', assignedTo: 'Dr. Anjali Desai' },
-  { id: 'NSSH.1243309', name: 'Kaushik V Krishnan', age: 37, diagnosis: 'Bilateral Pneumonia (Both lower zones)', status: 'Treatment', lastVisit: 'Jul 1, 2024', assignedTo: 'Dr. Vikram Singh' },
-  { id: 'NSSH.1272962', name: 'Shreyas Sanghavi', age: 33, diagnosis: 'Pneumonia (Left cardiac shadow)', status: 'Active', lastVisit: 'Jul 9, 2024', assignedTo: 'Dr. Anjali Desai' },
-  { id: 'NSSH.1281948', name: 'Sameer Tukaram Sawant', age: 46, diagnosis: 'Pneumonia (Left cardiac shadow)', status: 'Monitoring', lastVisit: 'Nov 21, 2024', assignedTo: 'Dr. Vikram Singh' },
-  { id: 'NSSH.620780', name: 'Govind Narayan Mundle', age: 68, diagnosis: 'Scoliosis + Osteoporosis', status: 'Cleared', lastVisit: 'May 20, 2025', assignedTo: 'Dr. Anjali Desai' },
-  { id: 'NSSH.855904', name: 'Dnyandev Mahadeo Khandare', age: 62, diagnosis: 'Normal (Pacemaker)', status: 'Cleared', lastVisit: 'Apr 26, 2025', assignedTo: 'Dr. Vikram Singh' },
-  { id: 'NSSH.1356382', name: 'Siraj Abdul Husain Attarwala', age: 69, diagnosis: 'Normal (Post-CABG)', status: 'Cleared', lastVisit: 'May 5, 2025', assignedTo: 'Dr. Anjali Desai' },
-  { id: 'NSSH.1364005', name: 'Rituraj Dasgupta', age: 46, diagnosis: 'Normal Study', status: 'Cleared', lastVisit: 'May 26, 2025', assignedTo: 'Dr. Vikram Singh' },
-]
+const initialPatients = []
 
-export default function LabAdminDashboard(){
+export default function LabAdminDashboard() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
   const [patients, setPatients] = useState(initialPatients)
@@ -30,7 +21,7 @@ export default function LabAdminDashboard(){
     navigate('/login')
   }
 
-  const filteredPatients = patients.filter(p => 
+  const filteredPatients = patients.filter(p =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.diagnosis.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -45,7 +36,7 @@ export default function LabAdminDashboard(){
   }
 
   const handleEdit = (patient) => {
-    setEditingPatient({...patient})
+    setEditingPatient({ ...patient })
     setIsAddingNew(false)
   }
 
@@ -62,7 +53,7 @@ export default function LabAdminDashboard(){
       setPatients(patients.map(p => p.id === editingPatient.id ? editingPatient : p))
       toast.success('Patient updated')
     }
-    
+
     setEditingPatient(null)
     setIsAddingNew(false)
   }
@@ -97,7 +88,7 @@ export default function LabAdminDashboard(){
         <div className="px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-md">
-              <Users className="text-white" size={20}/>
+              <Users className="text-white" size={20} />
             </div>
             <div>
               <div className="text-lg font-bold text-gray-800">Lab Admin Portal</div>
@@ -153,79 +144,79 @@ export default function LabAdminDashboard(){
             Create New Appointment
           </button>
         </div>
-        
+
         <div className="space-y-6">
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-        <input
-          type="text"
-          placeholder="Search by name, ID, diagnosis, or assigned doctor..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
-        />
-      </div>
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search by name, ID, diagnosis, or assigned doctor..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+            />
+          </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-800 text-white">
-              <tr>
-                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">ID</th>
-                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Patient Name</th>
-                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Age</th>
-                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Diagnosis</th>
-                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Status</th>
-                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Assigned To</th>
-                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Last Visit</th>
-                <th className="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredPatients.map((patient) => (
-                <tr key={patient.id} className="hover:bg-gray-50 transition">
-                  <td className="px-3 py-3 text-xs font-medium text-gray-900 whitespace-nowrap">{patient.id}</td>
-                  <td className="px-3 py-3 text-xs text-gray-900 whitespace-nowrap">{patient.name}</td>
-                  <td className="px-3 py-3 text-xs text-gray-700 whitespace-nowrap">{patient.age}</td>
-                  <td className="px-3 py-3 text-xs text-gray-900 whitespace-nowrap">{patient.diagnosis}</td>
-                  <td className="px-3 py-3 whitespace-nowrap">
-                    <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(patient.status)}`}>
-                      {patient.status}
-                    </span>
-                  </td>
-                  <td className="px-3 py-3 text-xs text-gray-900 whitespace-nowrap">{patient.assignedTo}</td>
-                  <td className="px-3 py-3 text-xs text-gray-700 whitespace-nowrap">{patient.lastVisit}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <div className="flex items-center justify-center gap-1.5">
-                      <button
-                        onClick={() => handleEdit(patient)}
-                        className="px-2.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded flex items-center gap-1 transition text-xs font-medium whitespace-nowrap"
-                        title="Edit"
-                      >
-                        <Edit size={13} />
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(patient.id)}
-                        className="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded flex items-center gap-1 transition text-xs font-medium whitespace-nowrap"
-                        title="Delete"
-                      >
-                        <Trash2 size={13} />
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {/* Table */}
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-800 text-white">
+                  <tr>
+                    <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">ID</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Patient Name</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Age</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Diagnosis</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Status</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Assigned To</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Last Visit</th>
+                    <th className="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredPatients.map((patient) => (
+                    <tr key={patient.id} className="hover:bg-gray-50 transition">
+                      <td className="px-3 py-3 text-xs font-medium text-gray-900 whitespace-nowrap">{patient.id}</td>
+                      <td className="px-3 py-3 text-xs text-gray-900 whitespace-nowrap">{patient.name}</td>
+                      <td className="px-3 py-3 text-xs text-gray-700 whitespace-nowrap">{patient.age}</td>
+                      <td className="px-3 py-3 text-xs text-gray-900 whitespace-nowrap">{patient.diagnosis}</td>
+                      <td className="px-3 py-3 whitespace-nowrap">
+                        <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(patient.status)}`}>
+                          {patient.status}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 text-xs text-gray-900 whitespace-nowrap">{patient.assignedTo}</td>
+                      <td className="px-3 py-3 text-xs text-gray-700 whitespace-nowrap">{patient.lastVisit}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            onClick={() => handleEdit(patient)}
+                            className="px-2.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded flex items-center gap-1 transition text-xs font-medium whitespace-nowrap"
+                            title="Edit"
+                          >
+                            <Edit size={13} />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(patient.id)}
+                            className="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded flex items-center gap-1 transition text-xs font-medium whitespace-nowrap"
+                            title="Delete"
+                          >
+                            <Trash2 size={13} />
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
-      </div>
-    </div>
 
       {/* Edit/Add Modal */}
       {editingPatient && (
@@ -236,7 +227,7 @@ export default function LabAdminDashboard(){
                 {isAddingNew ? 'Add Appointment' : 'Edit Appointment'}
               </h2>
             </div>
-            
+
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Patient ID</label>
@@ -253,7 +244,7 @@ export default function LabAdminDashboard(){
                 <input
                   type="text"
                   value={editingPatient.name}
-                  onChange={(e) => setEditingPatient({...editingPatient, name: e.target.value})}
+                  onChange={(e) => setEditingPatient({ ...editingPatient, name: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Anand Bineet Birendra Kumar"
                 />
@@ -264,7 +255,7 @@ export default function LabAdminDashboard(){
                 <input
                   type="number"
                   value={editingPatient.age}
-                  onChange={(e) => setEditingPatient({...editingPatient, age: e.target.value})}
+                  onChange={(e) => setEditingPatient({ ...editingPatient, age: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="45"
                 />
@@ -275,7 +266,7 @@ export default function LabAdminDashboard(){
                 <input
                   type="text"
                   value={editingPatient.diagnosis}
-                  onChange={(e) => setEditingPatient({...editingPatient, diagnosis: e.target.value})}
+                  onChange={(e) => setEditingPatient({ ...editingPatient, diagnosis: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Pneumonia"
                 />
@@ -285,7 +276,7 @@ export default function LabAdminDashboard(){
                 <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                 <select
                   value={editingPatient.status}
-                  onChange={(e) => setEditingPatient({...editingPatient, status: e.target.value})}
+                  onChange={(e) => setEditingPatient({ ...editingPatient, status: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option>Active</option>
@@ -300,7 +291,7 @@ export default function LabAdminDashboard(){
                 <input
                   type="text"
                   value={editingPatient.assignedTo}
-                  onChange={(e) => setEditingPatient({...editingPatient, assignedTo: e.target.value})}
+                  onChange={(e) => setEditingPatient({ ...editingPatient, assignedTo: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Dr. Anjali Desai"
                 />
@@ -311,7 +302,7 @@ export default function LabAdminDashboard(){
                 <input
                   type="text"
                   value={editingPatient.lastVisit}
-                  onChange={(e) => setEditingPatient({...editingPatient, lastVisit: e.target.value})}
+                  onChange={(e) => setEditingPatient({ ...editingPatient, lastVisit: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Oct 19, 2025"
                 />

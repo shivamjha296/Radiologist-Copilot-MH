@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
-import { Send, Paperclip, Sparkles, MessageSquare, Square } from 'lucide-react'
+import { Send, Paperclip, Square, Check, Edit2 } from 'lucide-react'
 import AgentMessage from '../components/AgentMessage'
 import AgentPipeline from '../components/AgentPipeline'
 
@@ -16,6 +16,9 @@ export default function Chat(){
   const [imagePreview, setImagePreview] = useState(null)
   const [isUserScrolling, setIsUserScrolling] = useState(false)
   const [isStreaming, setIsStreaming] = useState(false)
+  const [currentThreadId, setCurrentThreadId] = useState(null)
+  const [pendingReview, setPendingReview] = useState(null) // { threadId, report }
+  
   const fileRef = useRef()
   const scrollRef = useRef()
   const messagesContainerRef = useRef()
@@ -51,16 +54,13 @@ export default function Chat(){
   const addMessage = (msg) => {
     const messageId = Date.now()+Math.random()
     
-    // If it's a streaming message, handle streaming at state level
     if (msg.stream && msg.role === 'agent') {
       const fullText = msg.text
       let currentIndex = 0
       
-      // Add message with empty text first
       setMessages(m=>[...m, { id: messageId, ...msg, text: '', displayText: '' }])
       setIsStreaming(true)
       
-      // Stream the text character by character
       const interval = setInterval(() => {
         if (currentIndex < fullText.length) {
           currentIndex++
@@ -73,7 +73,6 @@ export default function Chat(){
           clearInterval(interval)
           delete streamingIntervals.current[messageId]
           setIsStreaming(false)
-          // Mark streaming as complete
           setMessages(m => m.map(message => 
             message.id === messageId 
               ? { ...message, text: fullText, displayText: fullText, stream: false }
@@ -89,22 +88,18 @@ export default function Chat(){
   }
 
   const stopStreaming = () => {
-    // Clear all streaming intervals
     Object.values(streamingIntervals.current).forEach(interval => clearInterval(interval))
     streamingIntervals.current = {}
     
-    // Clear pipeline timeout if exists
     if (pipelineTimeout.current) {
       clearTimeout(pipelineTimeout.current)
       pipelineTimeout.current = null
     }
     
-    // Stop any ongoing pipeline
     setPipeline(null)
     setCurrentStage(0)
     setIsStreaming(false)
     
-    // Mark all streaming messages as complete with their current text
     setMessages(m => m.map(message => 
       message.stream 
         ? { ...message, text: message.displayText || message.text, stream: false }
@@ -135,200 +130,149 @@ export default function Chat(){
     }, 500)
   }
 
-  // Workflow 1: X-ray Analysis with Segmentation
-  const simulateXrayWorkflow = (file) => {
+  // --- Real API Integration ---
+
+  const handleXrayUpload = async (file) => {
     const preview = URL.createObjectURL(file)
     setImagePreview(preview)
-    
-    addMessage({ role:'user', text:'Analyze this chest X-ray for pneumonia', image: preview })
-    
+    addMessage({ role:'user', text:'Analyze this chest X-ray', image: preview })
+
     const stages = [
       { name:'Smart Task Routing Agent', description:'Routing X-ray to analysis pipeline', duration:800 },
       { name:'Image Analysis Agent', description:'Detecting pathologies with CheXNet model', duration:2500 },
       { name:'Image Analysis Agent', description:'Generating GradCAM segmentation overlay', duration:1500 },
       { name:'NER Agent', description:'Extracting disease entities and severity levels', duration:1800 },
-      { name:'Report Generation Agent', description:'Formatting findings into structured report', duration:1200 },
+      { name:'Report Generation Agent', description:'Drafting initial report for review', duration:1200 },
     ]
 
-    const finalResponse = { 
-      role:'agent', 
-      agentName:'Image Analysis Agent', 
-      text:'✅ **Analysis Complete!**\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🔴 **HIGH CONFIDENCE FINDINGS**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n**Pneumonia (Left Cardiac Shadow)**\n• Confidence: 82.3%\n• Location: Behind left cardiac shadow\n• Severity: Moderate\n• Grad-CAM: Red zone highlighting affected region\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n� **NORMAL FINDINGS**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n**Heart Size**\n• Assessment: Normal\n\n**Aortic Knuckle**\n• Assessment: Normal\n\n**Costo-phrenic Angles**\n• Assessment: Both normal\n\n**Bony Thorax**\n• Assessment: Normal\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📊 **STRUCTURED ENTITIES EXTRACTED**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n• Disease: Pneumonia\n• Anatomical Region: Left cardiac shadow\n• Severity: Moderate\n• Other structures: Normal\n\n**Visual Segmentation:**\n• Heatmap overlay generated\n• Hot spots highlight left cardiac shadow opacity\n• Red zones = High probability regions\n\n⏱️ Processing: CheXNet model | 6.8 seconds',
-      stream:true,
-      image: preview
+    setPipeline(stages)
+    setCurrentStage(0)
+    setIsStreaming(true)
+
+    // Simulate pipeline progress while waiting for server
+    for (let i = 0; i < stages.length; i++) {
+        setCurrentStage(i + 1)
+        await new Promise(r => setTimeout(r, stages[i].duration)) 
     }
 
-    runPipeline(stages, finalResponse)
+    try {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const response = await fetch('http://localhost:8000/api/analyze', {
+            method: 'POST',
+            body: formData
+        })
+
+        if (!response.ok) throw new Error('Analysis failed')
+
+        const data = await response.json()
+        
+        if (data.status === 'review_required') {
+            setCurrentThreadId(data.thread_id)
+            setPendingReview({
+                threadId: data.thread_id,
+                report: data.current_report
+            })
+            
+            addMessage({
+                role: 'agent',
+                agentName: 'System',
+                text: `**Review Required**\n\nHere is the draft report generated by the AI. Please review and approve or edit it.\n\n---\n${data.current_report}\n---`,
+                stream: false
+            })
+        }
+
+    } catch (error) {
+        console.error(error)
+        toast.error('Failed to analyze image')
+        addMessage({ role: 'agent', agentName: 'System', text: '❌ Error analyzing image. Please try again.' })
+    } finally {
+        setPipeline(null)
+        setIsStreaming(false)
+    }
   }
 
-  // Workflow 2: Complete Report Generation
-  const simulateReportWorkflow = () => {
-    addMessage({ role:'user', text:'Generate a comprehensive report for patient ID NSSH.1215787' })
-    
-    const stages = [
-      { name:'Smart Task Routing Agent', description:'Routing to report generation pipeline', duration:800 },
-      { name:'Patient Management Agent', description:'Fetching patient history and recent scans', duration:1500 },
-      { name:'Image Analysis Agent', description:'Analyzing latest X-ray scan', duration:2000 },
-      { name:'NER Agent', description:'Extracting medical entities from findings', duration:1800 },
-      { name:'Report Generation Agent', description:'Generating structured report with BioMedCLIP', duration:2200 },
-      { name:'Validation Agent', description:'Validating report consistency and confidence', duration:1000 },
-      { name:'Chatbot Communication Agent', description:'Creating patient-friendly summary', duration:1200 },
-    ]
+  const handleFeedback = async (action, newReport = null) => {
+    if (!pendingReview) return
 
-    const reportData = {
-      patientName: 'Anand Bineet Birendra Kumar',
-      patientId: 'NSSH.1215787',
-      age: '31',
-      gender: 'Male',
-      date: 'October 18, 2025',
-      study: 'Chest X-ray PA & Lateral',
-      clinicalIndication: 'Cough and fever for 5 days. Suspected pneumonia.',
-      findings: [
-        'Soft tissue opacity seen behind left cardiac shadow due to pneumonia',
-        'The heart size appears normal',
-        'The aortic knuckle is normal',
-        'Both costo-phrenic angles are normal',
-        'The bony thorax and both dome of diaphragms appear normal'
-      ],
-      impression: [
-        'Pneumonia behind left cardiac shadow',
-        'Heart size normal',
-        'No other acute abnormalities'
-      ],
-      recommendations: [
-        'Antibiotic therapy as indicated',
-        'Follow-up X-ray in 2 weeks',
-        'Cardiology consultation recommended'
-      ],
-      validation: {
-        consistency: 'Verified ✓',
-        confidenceScore: '96.8%',
-        templateCompliance: 'Yes ✓'
-      },
-      generatedBy: 'MedGemma + BioMedCLIP',
-      processingTime: '10.5 sec'
+    try {
+        toast.loading('Finalizing report...')
+        const response = await fetch('http://localhost:8000/api/feedback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                thread_id: pendingReview.threadId,
+                action: action,
+                new_report: newReport
+            })
+        })
+
+        if (!response.ok) throw new Error('Feedback failed')
+
+        const data = await response.json()
+        toast.dismiss()
+        toast.success('Report finalized!')
+
+        setPendingReview(null)
+        setCurrentThreadId(null)
+
+        let finalText = `✅ **Report Finalized!**\n\n`
+        if (data.pdf_url) finalText += `📄 [Download PDF](http://localhost:8000${data.pdf_url})\n`
+        if (data.visualization_url) finalText += `🖼️ [View Visualization](http://localhost:8000${data.visualization_url})\n`
+
+        addMessage({
+            role: 'agent',
+            agentName: 'Report Generation Agent',
+            text: finalText,
+            stream: false
+        })
+
+    } catch (error) {
+        console.error(error)
+        toast.error('Failed to finalize report')
     }
-
-    const finalResponse = { 
-      role:'agent', 
-      agentName:'Report Generation & Validation Agent',
-      reportData: reportData,
-      stream:false 
-    }
-
-    runPipeline(stages, finalResponse)
-  }
-
-  // Workflow 3: Patient Database Search
-  const simulatePatientSearch = () => {
-    addMessage({ role:'user', text:'Show all patients with pneumonia' })
-    
-    const stages = [
-      { name:'Smart Task Routing Agent', description:'Routing to database query pipeline', duration:600 },
-      { name:'Patient Management Agent', description:'Searching patient records database', duration:1500 },
-      { name:'NER Agent', description:'Filtering by extracted disease entities', duration:1000 },
-      { name:'Scheduling & Workflow Agent', description:'Sorting by urgency and follow-up dates', duration:800 },
-    ]
-
-    const finalResponse = { 
-      role:'agent', 
-      agentName:'Patient Management Agent', 
-      text:'✅ **Found 4 Patients with Pneumonia**\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n1️⃣ **ANAND BINEET BIRENDRA KUMAR**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n• UHID: NSSH.1215787\n• Age: 31 | Gender: Male\n• Diagnosis: Pneumonia (Left cardiac shadow)\n• Status: 🟢 Active Treatment\n• Study Date: September 3, 2024\n• Location: Behind left cardiac shadow\n• Follow-up: October 25, 2025\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n2️⃣ **KAUSHIK V KRISHNAN**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n• UHID: NSSH.1243309\n• Age: 37 | Gender: Male\n• Diagnosis: Bilateral Pneumonia (Both lower zones)\n• Status: � ICU - Critical Care\n• Study Date: July 1, 2024\n• Devices: Tracheostomy, NG tube, CVC\n• Follow-up: Daily ICU monitoring\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n3️⃣ **SHREYAS SANGHAVI**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n• UHID: NSSH.1272962\n• Age: 33 | Gender: Male\n• Diagnosis: Pneumonia (Left cardiac shadow)\n• Status: 🟢 Active Treatment\n• Study Date: July 9, 2024\n• Location: Behind left cardiac shadow\n• Follow-up: October 28, 2025\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n4️⃣ **SAMEER TUKARAM SAWANT**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n• UHID: NSSH.1281948\n• Age: 46 | Gender: Male\n• Diagnosis: Pneumonia (Left cardiac shadow)\n• Status: � Requires Evaluation\n• Study Date: November 21, 2024\n• Device: Nasogastric tube in position\n• Follow-up: October 30, 2025\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📊 **SEARCH SUMMARY**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n• Total records: 8 patients scanned\n• Matches: 4 active pneumonia cases (50%)\n• Search time: 0.28 seconds\n• Sorted by: Clinical urgency + Status\n\n💡 Navigate to Patients page for full database',
-      stream:true 
-    }
-
-    runPipeline(stages, finalResponse)
-  }
-
-  // Workflow 4: X-ray Comparison
-  const simulateComparison = () => {
-    addMessage({ role:'user', text:'Compare patient scans from last month' })
-    
-    const stages = [
-      { name:'Smart Task Routing Agent', description:'Routing to comparison analysis pipeline', duration:700 },
-      { name:'Patient Management Agent', description:'Retrieving historical X-ray scans', duration:1400 },
-      { name:'X-ray Comparison Agent', description:'Aligning and comparing images', duration:2000 },
-      { name:'Image Analysis Agent', description:'Detecting changes in pathology', duration:1800 },
-      { name:'NER Agent', description:'Extracting progression data', duration:1200 },
-      { name:'Report Generation Agent', description:'Generating comparison report', duration:1500 },
-    ]
-
-    const finalResponse = { 
-      role:'agent', 
-      agentName:'X-ray Comparison Agent', 
-      text:'✅ **Comparative Analysis Complete**\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📅 **BASELINE SCAN** (Sep 3, 2024)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n• Patient: Anand Bineet B. Kumar (NSSH.1215787)\n• Pneumonia Severity: 82%\n• Lung Opacity: 82%\n• Affected Area: 4.2 cm²\n• Status: Active consolidation in RLL\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📅 **CURRENT SCAN** (Oct 18, 2025)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n• Pneumonia Severity: 52%\n• Lung Opacity: 61%\n• Affected Area: 2.8 cm²\n• Status: Resolving consolidation\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📈 **CHANGES DETECTED** (411 days)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n✅ Pneumonia severity: ↓ 45% improvement\n✅ Lung opacity: ↓ 32% clearer\n✅ Affected area: ↓ 1.4 cm² reduction\n✅ Air bronchograms: Resolving\n✅ Pleural effusion: Resolved\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🩺 **CLINICAL INTERPRETATION**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nPatient showing **significant clinical improvement**.\nPneumonia responding well to treatment.\nConsolidation decreased substantially.\nNo new infiltrates detected.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n💊 **RECOMMENDATIONS**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n✓ Continue antibiotic regimen\n✓ Follow-up X-ray in 2 weeks\n✓ Monitor for complete resolution\n\n⏱️ Comparison completed in 8.6 seconds',
-      stream:true 
-    }
-
-    runPipeline(stages, finalResponse)
-  }
-
-  // Workflow 5: NER Extraction from Report
-  const simulatePDFProcessing = (file) => {
-    const fileName = file ? file.name : 'medical_report.pdf'
-    addMessage({ role:'user', text:`Extract patient information from this medical report\n\n📄 ${fileName}` })
-    
-    const stages = [
-      { name:'Smart Task Routing Agent', description:'Routing to NER extraction pipeline', duration:700 },
-      { name:'NER Agent', description:'Extracting medical entities with BioBERT', duration:2500 },
-      { name:'Validation Agent', description:'Validating extracted data accuracy', duration:1200 },
-      { name:'Patient Management Agent', description:'Storing records in database', duration:1500 },
-    ]
-
-    const finalResponse = { 
-      role:'agent', 
-      agentName:'NER Agent', 
-      text:'✅ **Medical Entities Extracted Successfully!**\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n👤 **PATIENT INFORMATION**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n• Name: Govind Narayan Mundle\n• UHID: NSSH.620780\n• Age: 68 years | Gender: Male\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🏥 **EXTRACTED CLINICAL DATA**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n**Diseases:**\n• Scoliosis (Confidence: 99%)\n• Osteoporosis (Confidence: 97%)\n\n**Anatomical Terms:**\n• Upper dorsal spine\n• Costo-phrenic angles\n• Aortic knuckle\n\n**Medications:**\n• Calcium supplements\n• Vitamin D3\n\n**Procedures:**\n• Chest X-ray PA/Lateral\n• Bone density assessment\n\n**Vitals:**\n• BP: 135/85 mmHg\n• Temperature: 98.6°F\n• Heart Rate: 72 bpm\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📅 **TIMELINE**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n• Study Date: May 20, 2025\n• Referring: Self-referral (2015-SELF)\n• Follow-up: November 20, 2025\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n💾 **DATABASE STATUS**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n✓ Record saved: NSSH.620780\n✓ Extraction confidence: 98.2%\n✓ HIPAA compliant: Yes\n✓ Entities structured: 14 items\n\n🎉 Patient "Govind Narayan Mundle" added!\n\n⏱️ Extraction completed in 4.8 seconds',
-      stream:true 
-    }
-
-    runPipeline(stages, finalResponse)
   }
 
   const handleSend = async ()=>{
     if(!input.trim()) return
-    const userInput = input.toLowerCase()
     
-    if(userInput.includes('generate') && userInput.includes('report') && (userInput.includes('nssh.1215787') || userInput.includes('1215787'))){
-      simulateReportWorkflow()
+    // If pending review, treat input as edit if user types "edit"
+    if (pendingReview) {
+        if (input.toLowerCase().startsWith('edit:')) {
+            const editedText = input.substring(5).trim()
+            handleFeedback('edit', editedText)
+            setInput('')
+            return
+        } else if (input.toLowerCase() === 'approve') {
+            handleFeedback('approve')
+            setInput('')
+            return
+        }
     }
-    else if(userInput.includes('extract') && (userInput.includes('patient') || userInput.includes('report'))){
-      simulatePDFProcessing()
-    }
-    else if(userInput.includes('show') && userInput.includes('patient')){
-      simulatePatientSearch()
-    }
-    else if(userInput.includes('compare') && userInput.includes('scan')){
-      simulateComparison()
-    }
-    else if(userInput.includes('report') || userInput.includes('generate')){
-      simulateReportWorkflow()
-    }
-    else {
-      addMessage({ role:'user', text:input })
-      setTimeout(()=>{
+
+    addMessage({ role:'user', text:input })
+    setInput('')
+    
+    // Simple fallback for text chat
+    setTimeout(()=>{
         addMessage({ 
           role:'agent', 
           agentName:'Smart Task Routing Agent', 
-          text:'💡 I can help with:\n\n1️⃣ **X-ray Analysis** - Upload image for pathology detection\n2️⃣ **Report Generation** - "Generate report for patient ID NSSH.1215787"\n3️⃣ **Patient Search** - "Show all patients with pneumonia"\n4️⃣ **X-ray Comparison** - "Compare patient scans from last month"\n5️⃣ **NER Extraction** - "Extract patient info from report"\n\nUpload an X-ray using the 📷 button!', 
+          text:'💡 I can help with X-ray analysis. Please upload an image!', 
           stream:true 
         })
-      }, 500)
-    }
-    
-    setInput('')
+    }, 500)
   }
 
   const handleUpload = (e)=>{
     const f = e.target.files[0]
     if(!f) return
     
-    // Check if it's a PDF or image
     if(f.type === 'application/pdf'){
-      simulatePDFProcessing(f)
-      toast.success('PDF uploaded - extracting patient info...')
+      toast.error('PDF processing not yet connected to backend')
     } else {
-      simulateXrayWorkflow(f)
+      handleXrayUpload(f)
       toast.success('Image uploaded - analyzing...')
     }
   }
@@ -341,41 +285,8 @@ export default function Chat(){
   }
 
   const handleRegenerate = (message) => {
-    // Find the user message that triggered this response
-    const messageIndex = messages.findIndex(m => m.id === message.id)
-    if (messageIndex > 0) {
-      const userMessage = messages[messageIndex - 1]
-      if (userMessage.role === 'user') {
-        // Remove the agent response
-        setMessages(m => m.filter((_, i) => i !== messageIndex))
-        
-        // Re-trigger the workflow based on the user message
-        setTimeout(() => {
-          if (userMessage.image) {
-            // Re-analyze the X-ray
-            toast.success('Regenerating X-ray analysis...')
-            // Simulate re-running analysis
-            const finalResponse = { 
-              role:'agent', 
-              agentName:'Image Analysis Agent', 
-              text:'✅ **Analysis Complete!**\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🔴 **HIGH CONFIDENCE FINDINGS**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n**Pneumonia (Left Cardiac Shadow)**\n• Confidence: 82.3%\n• Location: Behind left cardiac shadow\n• Severity: Moderate\n• Grad-CAM: Red zone highlighting affected region\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n✅ **NORMAL FINDINGS**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n**Heart Size**\n• Assessment: Normal\n\n**Aortic Knuckle**\n• Assessment: Normal\n\n**Costo-phrenic Angles**\n• Assessment: Both normal\n\n**Bony Thorax**\n• Assessment: Normal\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📊 **STRUCTURED ENTITIES EXTRACTED**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n• Disease: Pneumonia\n• Anatomical Region: Left cardiac shadow\n• Severity: Moderate\n• Other structures: Normal\n\n**Visual Segmentation:**\n• Heatmap overlay generated\n• Hot spots highlight left cardiac shadow opacity\n• Red zones = High probability regions\n\n⏱️ Processing: CheXNet model | 6.8 seconds',
-              stream:true,
-              image: userMessage.image
-            }
-            addMessage(finalResponse)
-          } else {
-            // Regenerate text response
-            const responseText = message.displayText || message.text
-            addMessage({ 
-              role:'agent', 
-              agentName: message.agentName || 'AI Assistant', 
-              text: responseText,
-              stream: true
-            })
-          }
-        }, 500)
-      }
-    }
+    // Simplified regenerate
+    toast.success('Regenerate not implemented yet')
   }
 
   return (
@@ -397,19 +308,43 @@ export default function Chat(){
             />
           ))}
           
+          {pendingReview && (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mx-4">
+                <h3 className="font-bold text-yellow-800 mb-2">Review Pending</h3>
+                <p className="text-sm text-yellow-700 mb-3">Please review the draft report above.</p>
+                <div className="flex gap-2">
+                    <button 
+                        onClick={() => handleFeedback('approve')}
+                        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex items-center gap-2"
+                    >
+                        <Check size={16} /> Approve
+                    </button>
+                    <button 
+                        onClick={() => {
+                            const newText = prompt("Edit Report:", pendingReview.report)
+                            if (newText) handleFeedback('edit', newText)
+                        }}
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2"
+                    >
+                        <Edit2 size={16} /> Edit
+                    </button>
+                </div>
+            </div>
+          )}
+
           <div ref={scrollRef} />
         </div>
 
         <div className="px-4 py-3 border-t border-slate-200 bg-white" style={{ flexShrink: 0 }}>
           <div className="flex items-center gap-3">
-            <label className="p-2.5 bg-slate-100 rounded-lg cursor-pointer hover:bg-slate-200 transition flex-shrink-0" title="Upload X-ray image or PDF report">
+            <label className="p-2.5 bg-slate-100 rounded-lg cursor-pointer hover:bg-slate-200 transition flex-shrink-0" title="Upload X-ray image">
               <Paperclip size={20} className="text-slate-600"/>
-              <input ref={fileRef} onChange={handleUpload} type="file" accept="image/*,application/pdf,.pdf" className="hidden" />
+              <input ref={fileRef} onChange={handleUpload} type="file" accept="image/*" className="hidden" />
             </label>
             <input 
               type="text"
               className="flex-1 px-4 py-2.5 text-base border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-slate-400 bg-white placeholder:text-slate-400" 
-              placeholder='Try: "Show all patients with pneumonia" or "Generate report for patient ID NSSH.1215787"' 
+              placeholder={pendingReview ? 'Type "approve" or "edit: <new text>"' : 'Upload an X-ray to start...'} 
               value={input} 
               onChange={(e)=>setInput(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -420,7 +355,6 @@ export default function Chat(){
               <button 
                 onClick={stopStreaming} 
                 className="px-5 py-2.5 bg-red-600 text-white rounded-lg flex items-center gap-2 hover:bg-red-700 transition flex-shrink-0 text-base font-medium"
-                title="Stop generation"
               >
                 <Square size={16} fill="currentColor" /> Stop
               </button>

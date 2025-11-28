@@ -5,7 +5,6 @@ import PatientProtectedRoute from './components/PatientProtectedRoute'
 import LabAdminProtectedRoute from './components/LabAdminProtectedRoute'
 import Layout from './components/Layout'
 import Login from './pages/Login'
-import Chat from './pages/Chat'
 import Xray from './pages/Xray'
 import Reports from './pages/Reports'
 import Compare from './pages/Compare'
@@ -44,11 +43,10 @@ export default function App(){
           <ProtectedRoute>
             <Layout>
               <Routes>
-                <Route path="/" element={<Chat/>} />
+                <Route path="/" element={<Patients/>} />
                 <Route path="/xray" element={<Xray/>} />
                 <Route path="/reports" element={<Reports/>} />
                 <Route path="/compare" element={<Compare/>} />
-                <Route path="/patients" element={<Patients/>} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Layout>
