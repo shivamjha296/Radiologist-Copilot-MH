@@ -2,20 +2,29 @@
 Database connection and session management
 PostgreSQL with pgvector extension for semantic search
 """
+import os
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Generator
 
-# Database connection string
-DATABASE_URL = "postgresql://admin:radpass@localhost:5432/radiology_db"
+# Load environment variables
+load_dotenv()
 
-# Create engine with connection pooling
+# Database connection string from environment variable
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://admin:radpass@localhost:5432/radiology_db")
+
+# Create engine with connection pooling and SSL support
 engine = create_engine(
     DATABASE_URL,
     echo=False,  # Set to True for SQL query logging
     pool_size=10,
     max_overflow=20,
     pool_pre_ping=True,  # Verify connections before using
+    connect_args={
+        "sslmode": "require",  # Require SSL for external connections
+        "connect_timeout": 10,
+    } if "render.com" in DATABASE_URL else {}
 )
 
 # Session factory

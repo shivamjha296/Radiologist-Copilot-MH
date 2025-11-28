@@ -1,7 +1,0 @@
-databases:
-  - name: radiology-postgres
-    databaseName: radiology_db
-    user: admin
-    plan: free
-    region: oregon
-    ipAllowList: []  # Allow connections from anywhere (for development)
