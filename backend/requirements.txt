@@ -1,15 +1,40 @@
-streamlit
-python-dotenv
-Pillow
-transformers
-open-clip-torch
-matplotlib
-scikit-image
-scipy
-numpy
-opencv-python
-pdfplumber
-PyMuPDF
-mysql-connector-python
+# Core Backend Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
 
-pip install streamlit python-dotenv Pillow transformers open-clip-torch matplotlib scikit-image scipy numpy opencv-python pdfplumber PyMuPDF mysql-connector-python
+# Database - PostgreSQL with Vector Support
+sqlalchemy>=2.0.23
+psycopg2-binary>=2.9.9
+pgvector>=0.2.4
+alembic>=1.13.0
+
+# Data Validation
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# AI/ML Models
+transformers>=4.35.0
+torch>=2.1.0
+open-clip-torch>=2.24.0
+
+# Image Processing
+Pillow>=10.1.0
+opencv-python>=4.8.1
+scikit-image>=0.22.0
+matplotlib>=3.8.2
+
+# PDF Processing
+pdfplumber>=0.10.3
+PyMuPDF>=1.23.8
+
+# Scientific Computing
+numpy>=1.26.2
+scipy>=1.11.4
+
+# Utilities
+python-dotenv>=1.0.0
+
+# Additional for deployment
+gunicorn>=21.2.0
+requests>=2.31.0
