@@ -47,7 +47,10 @@ export const AuthProvider = ({ children }) => {
       }
       setUser(userData)
       localStorage.setItem('radiologist_user', JSON.stringify(userData))
-      return { success: true }
+      
+      // Return redirect path based on role
+      const redirectPath = role === 'patient' ? '/patient-dashboard' : role === 'labadmin' ? '/lab-admin' : '/'
+      return { success: true, redirectPath }
     } else {
       return { success: false, error: 'Invalid credentials. Password must be "password123"' }
     }

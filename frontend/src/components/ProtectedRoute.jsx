@@ -2,7 +2,7 @@ import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth()
+  const { user, loading } = useAuth()
 
   if (loading) {
     return (
@@ -15,8 +15,19 @@ export default function ProtectedRoute({ children }) {
     )
   }
 
-  if (!isAuthenticated) {
+  // If not authenticated, redirect to login
+  if (!user || !user.isAuthenticated) {
     return <Navigate to="/login" replace />
+  }
+
+  // If authenticated as patient but trying to access radiologist routes, redirect
+  if (user.role === 'patient') {
+    return <Navigate to="/patient-dashboard" replace />
+  }
+
+  // If authenticated as lab admin but trying to access radiologist routes, redirect
+  if (user.role === 'labadmin') {
+    return <Navigate to="/lab-admin" replace />
   }
 
   return children

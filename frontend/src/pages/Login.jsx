@@ -23,7 +23,8 @@ export default function Login() {
       
       if (result.success) {
         toast.success('Login successful!')
-        navigate('/')
+        // Navigate to the appropriate dashboard based on user role
+        navigate(result.redirectPath || '/')
       } else {
         setError(result.error)
         toast.error(result.error)
@@ -89,6 +90,7 @@ export default function Login() {
                 >
                   <option value="radiologist">Radiologist</option>
                   <option value="patient">Patient</option>
+                  <option value="labadmin">Lab Admin</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                   <ChevronDown className="text-slate-400" size={18} />

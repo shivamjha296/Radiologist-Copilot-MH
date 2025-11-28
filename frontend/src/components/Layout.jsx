@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Home, MessageSquare, Image, FileText, GitCompare, Users, Sparkles, Menu, X, LogOut, ChevronDown } from 'lucide-react'
+import { Home, MessageSquare, Image, FileText, GitCompare, Users, Sparkles, Menu, X, LogOut, ChevronDown, User } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 
@@ -46,6 +46,23 @@ export default function Layout({ children }){
             <Link to="/reports" className={`flex items-center gap-3 p-3 rounded-lg transition ${loc.pathname === '/reports' ? 'bg-teal-600 text-white font-medium shadow-md' : 'hover:bg-slate-700 text-slate-300 hover:text-white'}`}>
               <FileText size={20}/> Reports
             </Link>
+            
+            {/* Separator */}
+            <div className="border-t border-slate-700 my-4"></div>
+            
+            {/* Patient Portal Link */}
+            <a 
+              href="/patient-dashboard" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 p-3 rounded-lg transition hover:bg-blue-600 text-slate-300 hover:text-white border border-blue-500/50 hover:border-blue-400"
+            >
+              <User size={20}/> 
+              <div>
+                <div className="font-medium">Patient Portal</div>
+                <div className="text-xs opacity-75">View as Patient</div>
+              </div>
+            </a>
           </nav>
 
           <div className="mt-6 p-4 bg-slate-700/50 rounded-lg border border-slate-600">
