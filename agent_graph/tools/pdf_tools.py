@@ -75,9 +75,18 @@ def generate_pdf_report(patient_details, report_content, output_path):
                 story.append(Paragraph(line.replace('#', '').strip(), styles['Heading3']))
             elif line.startswith('-') or line.startswith('*'):
                 # Handle bullets
-                story.append(Paragraph(f"• {line.strip('-* ')}", content_style))
+                clean_line = line.strip('-* ')
+                # Replace **bold** with <b>bold</b> for ReportLab
+                clean_line = clean_line.replace('**', '<b>', 1).replace('**', '</b>', 1)
+                while '**' in clean_line: # Handle multiple bold segments
+                     clean_line = clean_line.replace('**', '<b>', 1).replace('**', '</b>', 1)
+                story.append(Paragraph(f"• {clean_line}", content_style))
             else:
-                story.append(Paragraph(line, content_style))
+                # Handle bold in normal text
+                clean_line = line
+                while '**' in clean_line:
+                     clean_line = clean_line.replace('**', '<b>', 1).replace('**', '</b>', 1)
+                story.append(Paragraph(clean_line, content_style))
                 
     story.append(Spacer(1, 30))
     

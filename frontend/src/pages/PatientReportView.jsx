@@ -6,8 +6,20 @@ import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 
 // Simple Heatmap Component (Simulated)
+// Heatmap Component
 const HeatmapOverlay = ({ imageUrl, visible }) => {
   if (!visible) return null;
+
+  if (imageUrl) {
+    return (
+      <img
+        src={imageUrl.startsWith('http') ? imageUrl : `http://localhost:8000${imageUrl}`}
+        alt="Heatmap Overlay"
+        className="absolute inset-0 w-full h-full object-contain mix-blend-multiply opacity-70 pointer-events-none"
+      />
+    );
+  }
+
   return (
     <div className="absolute inset-0 pointer-events-none mix-blend-multiply opacity-60 bg-gradient-to-br from-transparent via-yellow-500/20 to-red-600/40 rounded-lg" />
   );
@@ -280,7 +292,10 @@ export default function PatientReportView() {
                 alt="X-ray"
                 className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-lg"
               />
-              <HeatmapOverlay visible={showHeatmap} />
+              <HeatmapOverlay
+                visible={showHeatmap}
+                imageUrl={report.ner_tags?.visualization_path}
+              />
             </div>
           </div>
         </div>
