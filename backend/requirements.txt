@@ -18,12 +18,16 @@ pydantic-settings>=2.1.0
 
 # AI/ML Models
 transformers>=4.35.0
-torch>=2.1.0
+# NOTE: For reproducible CPU-only installs use the PyTorch index URL:
+#   pip install torch==2.9.1+cpu torchvision==0.24.1+cpu torchaudio==2.9.1+cpu --index-url https://download.pytorch.org/whl/cpu
+torch==2.9.1+cpu
+torchvision==0.24.1+cpu
+torchaudio==2.9.1+cpu
 open-clip-torch>=2.24.0
 
 # Image Processing
 Pillow>=10.1.0
-opencv-python>=4.8.1
+opencv-python-headless>=4.8.1
 scikit-image>=0.22.0
 matplotlib>=3.8.2
 
@@ -41,3 +45,17 @@ python-dotenv>=1.0.0
 # Additional for deployment
 gunicorn>=21.2.0
 requests>=2.31.0
+
+# Streamlit UI
+streamlit
+
+# MySQL Support (for legacy WhatsApp integration)
+mysql-connector-python
+
+# WhatsApp Integration
+twilio
+flask
+
+# AI Chat Support
+google-generativeai
+openai
