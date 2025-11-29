@@ -3,11 +3,13 @@ Configuration and model loading for Medical NER application.
 """
 import os
 import streamlit as st
+from pathlib import Path
 from transformers import AutoTokenizer, AutoModelForTokenClassification, pipeline
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from parent directory
+env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 # Model configuration
 MODEL_NAME = "d4data/biomedical-ner-all"

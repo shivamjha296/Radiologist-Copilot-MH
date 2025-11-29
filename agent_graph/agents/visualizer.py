@@ -1,6 +1,6 @@
 from agent_graph.state import AgentState
 from agent_graph.tools.model_tools import ModelManager, preprocess_image_for_chexnet, CHEXNET_LABELS
-from agent_graph.tools.viz_tools import GradCAM, analyze_pathology_regions, create_labeled_overlay_visualization, generate_region_report
+from agent_graph.tools.viz_tools import GradCAM, analyze_pathology_regions, create_labeled_overlay_visualization, generate_region_report, create_overlay_image
 from PIL import Image
 import cv2
 import numpy as np
@@ -44,10 +44,11 @@ def visualizer_agent(state: AgentState) -> AgentState:
         region_analysis = analyze_pathology_regions(segmentation_maps, img_array.shape[:2])
         
         # Create overlay
-        overlay_image = create_labeled_overlay_visualization(image, segmentation_maps, region_analysis)
+        # overlay_image = create_labeled_overlay_visualization(image, segmentation_maps, region_analysis)
+        overlay_image = create_overlay_image(image, segmentation_maps, region_analysis)
         
         # Save overlay
-        output_dir = "d:/MUMBAI_HACKS/reports/visualizations"
+        output_dir = "reports/visualizations"
         os.makedirs(output_dir, exist_ok=True)
         patient_id = state.get("patient_id", "unknown")
         overlay_path = os.path.join(output_dir, f"overlay_{patient_id}.png")
@@ -65,7 +66,7 @@ def visualizer_agent(state: AgentState) -> AgentState:
         
         return {
             "current_report": updated_report,
-            "visualization_path": overlay_path
+            "visualization_path": f"/reports/visualizations/overlay_{patient_id}.png"
         }
         
     except Exception as e:

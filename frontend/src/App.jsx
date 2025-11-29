@@ -12,41 +12,43 @@ import Patients from './pages/Patients'
 import PatientDashboard from './pages/PatientDashboard'
 import PatientReportView from './pages/PatientReportView'
 import LabAdminDashboard from './pages/LabAdminDashboard'
+import RadiologistReportView from './pages/RadiologistReportView'
 
-export default function App(){
+export default function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/login" element={<Login/>} />
-        
+        <Route path="/login" element={<Login />} />
+
         {/* Lab Admin Routes - With Lab Admin Protection, No Layout */}
         <Route path="/lab-admin" element={
           <LabAdminProtectedRoute>
-            <LabAdminDashboard/>
+            <LabAdminDashboard />
           </LabAdminProtectedRoute>
         } />
-        
+
         {/* Patient Routes - With Patient Protection, No Layout */}
         <Route path="/patient-dashboard" element={
           <PatientProtectedRoute>
-            <PatientDashboard/>
+            <PatientDashboard />
           </PatientProtectedRoute>
         } />
         <Route path="/patient-report/:reportId" element={
           <PatientProtectedRoute>
-            <PatientReportView/>
+            <PatientReportView />
           </PatientProtectedRoute>
         } />
-        
+
         {/* Main App Routes - With Layout and Protection for Radiologists */}
         <Route path="/*" element={
           <ProtectedRoute>
             <Layout>
               <Routes>
-                <Route path="/" element={<Patients/>} />
-                <Route path="/xray" element={<Xray/>} />
-                <Route path="/reports" element={<Reports/>} />
-                <Route path="/compare" element={<Compare/>} />
+                <Route path="/" element={<Patients />} />
+                <Route path="/xray" element={<Xray />} />
+                <Route path="/reports" element={<Reports />} />
+                <Route path="/compare" element={<Compare />} />
+                <Route path="/radiologist/report/:reportId" element={<RadiologistReportView />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Layout>

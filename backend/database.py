@@ -3,13 +3,15 @@ Database connection and session management
 PostgreSQL with pgvector extension for semantic search
 """
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Generator
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from parent directory
+env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 # Database connection string from environment variable
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://admin:radpass@localhost:5432/radiology_db")

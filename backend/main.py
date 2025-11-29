@@ -7,15 +7,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import os
+from pathlib import Path
 from dotenv import load_dotenv
+
+# Load environment variables from parent directory
+env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 # Import database and models
 from database import get_db, engine
 from models import Base, Patient, Scan, PatientDocument, Report
 from storage import upload_to_cloud, delete_from_cloud, get_cloudinary_status
-
-# Load environment variables
-load_dotenv()
 
 # Create database tables
 Base.metadata.create_all(bind=engine)

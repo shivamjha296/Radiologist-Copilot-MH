@@ -93,8 +93,16 @@ class Report(Base):
                                             comment="Complete radiological report")
     impression: Mapped[str] = mapped_column(Text, nullable=False, 
                                              comment="Summary and conclusion")
+    patient_history: Mapped[Optional[str]] = mapped_column(Text, nullable=True,
+                                                             comment="Patient medical history summary")
+    comparison_findings: Mapped[Optional[str]] = mapped_column(Text, nullable=True,
+                                                                 comment="Comparison with previous scans")
     ner_tags: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True, 
                                                        comment="Named Entity Recognition tags (JSONB)")
+    pdf_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True,
+                                                    comment="Cloudinary URL for the generated PDF report")
+    status: Mapped[str] = mapped_column(String(50), default="Draft", nullable=False,
+                                         comment="Report status: Draft, Final")
     # embedding: Mapped[Optional[List[float]]] = mapped_column(Vector(1536), nullable=True, 
     #                                                            comment="Text embedding for semantic search")
 

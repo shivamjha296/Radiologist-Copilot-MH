@@ -220,3 +220,79 @@ def generate_region_report(region_analysis):
             report += f"- **Confidence Level:** {severity}\n\n"
     
     return report
+def create_overlay_image(image, segmentation_maps, region_analysis):
+    """
+    Creates a single overlay image with heatmap and bounding boxes, 
+    matching the original image dimensions.
+    """
+    try:
+        # Convert PIL to OpenCV format (RGB)
+        img_np = np.array(image)
+        
+        # Create a white canvas for the overlay (since frontend uses mix-blend-multiply)
+        # White becomes transparent in multiply mode
+        overlay = np.ones_like(img_np) * 255
+        
+        if not segmentation_maps:
+            return Image.fromarray(overlay)
+            
+        # We'll combine all pathologies
+        # For simplicity in this overlay, we'll use Red for all, or cycle colors
+        colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)] # RGB
+        
+        for idx, (pathology, seg_map) in enumerate(segmentation_maps.items()):
+            color = colors[idx % len(colors)]
+            
+            # 1. Apply Heatmap
+            # Normalize seg_map to 0-255
+            heatmap_uint8 = (seg_map * 255).astype(np.uint8)
+            
+            # Create a colored heatmap
+            # We want: where heatmap is high, show Color. Where low, show White.
+            # In multiply mode: 
+            # Result = Background * Overlay / 255
+            # So Overlay should be: 255 (White) where no heat, and Color where heat.
+            
+            # Inverse heatmap for mixing: 0 (Heat) to 1 (No Heat)
+            inv_heatmap = 1.0 - seg_map
+            inv_heatmap = np.clip(inv_heatmap, 0, 1)
+            
+            # Create colored layer
+            # R channel
+            layer_r = np.ones_like(seg_map) * 255
+            # If color is (255, 0, 0), then G and B should be reduced by heatmap intensity
+            # R stays 255. G becomes 255 * inv_heatmap. B becomes 255 * inv_heatmap.
+            
+            layer = np.zeros_like(img_np)
+            for c in range(3):
+                # If the color component is 255, it stays 255 (white)
+                # If the color component is 0, it goes down to 0 based on heatmap intensity
+                # Actually, simpler:
+                # Target Color at max heat: C
+                # Target Color at min heat: 255
+                # Pixel = C * heat + 255 * (1-heat)
+                layer[:, :, c] = (color[c] * seg_map + 255 * (1 - seg_map)).astype(np.uint8)
+            
+            # Combine with existing overlay using min (since we are in multiply logic domain, darker wins)
+            overlay = np.minimum(overlay, layer)
+
+            # 2. Draw Bounding Boxes
+            if pathology in region_analysis:
+                regions = region_analysis[pathology]['regions']
+                for region in regions:
+                    min_row, min_col, max_row, max_col = region['bbox']
+                    # Draw rectangle
+                    # cv2.rectangle(img, pt1, pt2, color, thickness)
+                    # Note: cv2 uses (x, y) -> (col, row)
+                    cv2.rectangle(overlay, (min_col, min_row), (max_col, max_row), color, 3)
+                    
+                    # Add Label
+                    label = f"{pathology} {region['region_id']}"
+                    cv2.putText(overlay, label, (min_col, min_row - 10), 
+                              cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+
+        return Image.fromarray(overlay.astype(np.uint8))
+        
+    except Exception as e:
+        print(f"Error creating overlay image: {e}")
+        return None

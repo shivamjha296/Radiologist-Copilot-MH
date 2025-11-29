@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FileText, Calendar, User, Eye, ChevronRight, LogOut, ChevronDown, Edit, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 
 // Sample patient reports data
-const patientReports = []
+
 
 export default function PatientDashboard() {
   const navigate = useNavigate()
@@ -21,6 +21,41 @@ export default function PatientDashboard() {
     gender: 'Male',
     address: ''
   })
+
+  const [patientReports, setPatientReports] = useState([])
+
+  useEffect(() => {
+    if (user?.name) {
+      fetchReports()
+    }
+  }, [user])
+
+  async function fetchReports() {
+    try {
+      const response = await fetch('http://localhost:8000/api/reports')
+      if (response.ok) {
+        const allReports = await response.json()
+        // Filter reports for the logged-in patient (by name)
+        const myReports = allReports.filter(r =>
+          r.patientName.toLowerCase() === user.name.toLowerCase()
+        ).map(r => ({
+          id: r.id,
+          reportNumber: `RPT-${r.id.toString().padStart(4, '0')}`,
+          title: `${r.scan?.body_part || 'Chest'} X-Ray Report`,
+          date: r.date,
+          time: r.time,
+          doctor: r.radiologist,
+          diagnosis: r.findings.substring(0, 50) + (r.findings.length > 50 ? '...' : ''),
+          status: r.status || 'Final',
+          pdf_url: r.pdf_url
+        }))
+        setPatientReports(myReports)
+      }
+    } catch (error) {
+      console.error('Error fetching reports:', error)
+      toast.error('Failed to load reports')
+    }
+  }
 
   const handleReportClick = (report) => {
     navigate(`/patient-report/${report.id}`, { state: { report } })

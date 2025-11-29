@@ -1,62 +1,43 @@
+import { useState, useEffect } from 'react'
 import { FileText, Download, Eye, Calendar, User } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 
-const mockReports = [
-  {
-    id: 1, 
-    patientName: 'Anand Bineet Birendra Kumar', 
-    patientId: 'NSSH.1215787',
-    date: 'Sep 3, 2024',
-    time: '14:30',
-    diagnosis: 'Pneumonia (Left cardiac shadow)',
-    findings: 'Soft tissue opacity behind left cardiac shadow due to pneumonia. Heart size normal.',
-    confidence: 82,
-    status: 'Final',
-    radiologist: 'Dr. Anjali Desai'
-  },
-  {
-    id: 2, 
-    patientName: 'Kaushik V Krishnan', 
-    patientId: 'NSSH.1243309',
-    date: 'Jul 1, 2024',
-    time: '11:15',
-    diagnosis: 'Bilateral Pneumonia (Both lower zones)',
-    findings: 'Bilateral lower zone pneumonia. Tracheostomy, NG tube, CVC in position.',
-    confidence: 91,
-    status: 'Final',
-    radiologist: 'Dr. Vikram Singh'
-  },
-  {
-    id: 3, 
-    patientName: 'Shreyas Sanghavi', 
-    patientId: 'NSSH.1272962',
-    date: 'Jul 9, 2024',
-    time: '09:45',
-    diagnosis: 'Pneumonia (Left cardiac shadow)',
-    findings: 'Soft tissue opacity behind left cardiac shadow. Normal cardiac and bony structures.',
-    confidence: 78,
-    status: 'Final',
-    radiologist: 'Dr. Anjali Desai'
-  },
-  {
-    id: 4, 
-    patientName: 'Sameer Tukaram Sawant', 
-    patientId: 'NSSH.1281948',
-    date: 'Nov 21, 2024',
-    time: '16:20',
-    diagnosis: 'Pneumonia (Left cardiac shadow)',
-    findings: 'Opacity behind left cardiac shadow. Nasogastric tube in position. Requires evaluation.',
-    confidence: 75,
-    status: 'Pending Review',
-    radiologist: 'Dr. Vikram Singh'
-  },
-]
+export default function Reports() {
+  const navigate = useNavigate()
+  const [reports, setReports] = useState([])
 
-export default function Reports(){
+  useEffect(() => {
+    fetchReports()
+  }, [])
+
+  async function fetchReports() {
+    try {
+      const response = await fetch(`http://localhost:8000/api/reports?t=${Date.now()}`)
+      if (response.ok) {
+        const data = await response.json()
+        setReports(data)
+      }
+    } catch (error) {
+      console.error('Error fetching reports:', error)
+      toast.error('Failed to load reports')
+    }
+  }
+
+  const handleViewReport = (report) => {
+    navigate(`/radiologist/report/${report.id}`)
+  }
+
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-6">
         <div className="space-y-4">
-          {mockReports.map(report => (
+          {reports.length === 0 && (
+            <div className="text-center text-gray-500 py-10">
+              No reports found.
+            </div>
+          )}
+          {reports.map(report => (
             <div key={report.id} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
               <div className="p-5">
                 <div className="flex items-start justify-between">
@@ -64,15 +45,14 @@ export default function Reports(){
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-lg font-semibold text-gray-900">{report.patientName}</h3>
                       <span className="text-sm text-gray-500">({report.patientId})</span>
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                        report.status === 'Final' 
-                          ? 'bg-teal-600 text-white' 
-                          : 'bg-amber-100 text-amber-800'
-                      }`}>
-                        {report.status}
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${report.status === 'Final'
+                        ? 'bg-teal-600 text-white'
+                        : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                        {report.status || 'Draft'}
                       </span>
                     </div>
-                    
+
                     <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
                       <div className="flex items-center gap-1">
                         <Calendar size={14} />
@@ -91,15 +71,15 @@ export default function Reports(){
 
                     <div className="mb-3">
                       <div className="text-sm font-medium text-gray-700 mb-1">Key Findings:</div>
-                      <div className="text-sm text-gray-600">{report.findings}</div>
+                      <div className="text-sm text-gray-600 line-clamp-2">{report.findings}</div>
                     </div>
 
                     <div className="flex items-center gap-2">
                       <div className="text-sm text-slate-600">AI Confidence:</div>
                       <div className="flex-1 max-w-xs bg-slate-200 rounded-full h-2">
-                        <div 
+                        <div
                           className="bg-teal-600 h-2 rounded-full"
-                          style={{width: `${report.confidence}%`}}
+                          style={{ width: `${report.confidence}%` }}
                         />
                       </div>
                       <span className="text-sm font-medium text-slate-900">{report.confidence}%</span>
@@ -107,7 +87,10 @@ export default function Reports(){
                   </div>
 
                   <div className="flex flex-col gap-2 ml-4">
-                    <button className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition flex items-center gap-2 text-sm font-medium shadow-md">
+                    <button
+                      onClick={() => handleViewReport(report)}
+                      className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition flex items-center gap-2 text-sm font-medium shadow-md"
+                    >
                       <Eye size={16} />
                       View
                     </button>

@@ -1,25 +1,54 @@
-import { useState } from 'react'
-import { Search, Plus, Edit, Trash2, Eye, Users } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Search, Plus, Edit, Trash2, Eye, Users, FileText } from 'lucide-react'
 import toast from 'react-hot-toast'
-
-const initialPatients = []
+import { useNavigate } from 'react-router-dom'
 
 export default function Patients() {
-  const [patients, setPatients] = useState(initialPatients)
+  const navigate = useNavigate()
+  const [patients, setPatients] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [editingPatient, setEditingPatient] = useState(null)
   const [isAddingNew, setIsAddingNew] = useState(false)
 
+  useEffect(() => {
+    fetchPatients()
+  }, [])
+
+  async function fetchPatients() {
+    try {
+      const response = await fetch('http://localhost:8000/api/patients')
+      if (response.ok) {
+        const data = await response.json()
+        setPatients(data)
+      }
+    } catch (error) {
+      console.error('Error fetching patients:', error)
+      toast.error('Failed to load patients')
+    }
+  }
+
   const filteredPatients = patients.filter(p =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.diagnosis.toLowerCase().includes(searchTerm.toLowerCase())
+    (p.diagnosis && p.diagnosis.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
-  const handleDelete = (patientId) => {
+  const handleDelete = async (patientId) => {
     if (window.confirm('Delete this patient record?')) {
-      setPatients(patients.filter(p => p.id !== patientId))
-      toast.success('Patient deleted')
+      try {
+        const response = await fetch(`http://localhost:8000/api/patients/${patientId}`, {
+          method: 'DELETE'
+        })
+        if (response.ok) {
+          setPatients(patients.filter(p => p.id !== patientId))
+          toast.success('Patient deleted')
+        } else {
+          toast.error('Failed to delete patient')
+        }
+      } catch (error) {
+        console.error('Error deleting patient:', error)
+        toast.error('Error deleting patient')
+      }
     }
   }
 
@@ -28,33 +57,59 @@ export default function Patients() {
     setIsAddingNew(false)
   }
 
-  const handleSave = () => {
-    if (!editingPatient.name || !editingPatient.age || !editingPatient.diagnosis) {
-      toast.error('Please fill all fields')
+  const handleSave = async () => {
+    if (!editingPatient.name || !editingPatient.age) {
+      toast.error('Please fill name and age')
       return
     }
 
-    if (isAddingNew) {
-      setPatients([...patients, editingPatient])
-      toast.success('Patient added')
-    } else {
-      setPatients(patients.map(p => p.id === editingPatient.id ? editingPatient : p))
-      toast.success('Patient updated')
-    }
+    try {
+      if (isAddingNew) {
+        const response = await fetch('http://localhost:8000/api/patients', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(editingPatient)
+        })
 
-    setEditingPatient(null)
-    setIsAddingNew(false)
+        if (response.ok) {
+          const newPatient = await response.json()
+          setPatients([...patients, newPatient])
+          toast.success('Patient added')
+        } else {
+          toast.error('Failed to add patient')
+        }
+      } else {
+        const response = await fetch(`http://localhost:8000/api/patients/${editingPatient.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(editingPatient)
+        })
+
+        if (response.ok) {
+          setPatients(patients.map(p => p.id === editingPatient.id ? { ...p, ...editingPatient } : p))
+          toast.success('Patient updated')
+        } else {
+          toast.error('Failed to update patient')
+        }
+      }
+
+      setEditingPatient(null)
+      setIsAddingNew(false)
+    } catch (error) {
+      console.error('Error saving patient:', error)
+      toast.error('Error saving patient')
+    }
   }
 
   const handleAddNew = () => {
     setIsAddingNew(true)
     setEditingPatient({
-      id: String(Math.floor(Math.random() * 9000) + 1000),
       name: '',
       age: '',
       diagnosis: '',
       status: 'Active',
-      lastVisit: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      assignedTo: '',
+      lastVisit: ''
     })
   }
 
@@ -66,6 +121,15 @@ export default function Patients() {
       'Cleared': 'bg-emerald-500 text-white'
     }
     return colors[status] || 'bg-slate-300 text-slate-800'
+  }
+
+  const getScanStatusColor = (status) => {
+    const colors = {
+      'Ready': 'bg-green-100 text-green-800',
+      'Processing': 'bg-blue-100 text-blue-800',
+      'None': 'bg-gray-100 text-gray-500'
+    }
+    return colors[status] || 'bg-gray-100 text-gray-500'
   }
 
   return (
@@ -110,6 +174,7 @@ export default function Patients() {
                     <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Age</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Diagnosis</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Status</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Scan Status</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Last Visit</th>
                     <th className="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Actions</th>
                   </tr>
@@ -126,9 +191,24 @@ export default function Patients() {
                           {patient.status}
                         </span>
                       </td>
+                      <td className="px-3 py-3 whitespace-nowrap">
+                        <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getScanStatusColor(patient.scanStatus)}`}>
+                          {patient.scanStatus || 'None'}
+                        </span>
+                      </td>
                       <td className="px-3 py-3 text-xs text-gray-700 whitespace-nowrap">{patient.lastVisit}</td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="flex items-center justify-center gap-1.5">
+                          {patient.scanStatus === 'Ready' && (
+                            <button
+                              onClick={() => navigate(`/radiologist/report/${patient.reportId}`)}
+                              className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center gap-1 transition text-xs font-medium whitespace-nowrap"
+                              title="View Report"
+                            >
+                              <FileText size={13} />
+                              Report
+                            </button>
+                          )}
                           <button
                             onClick={() => handleEdit(patient)}
                             className="px-2.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded flex items-center gap-1 transition text-xs font-medium whitespace-nowrap"
