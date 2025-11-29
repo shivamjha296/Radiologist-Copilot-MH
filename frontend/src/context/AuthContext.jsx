@@ -43,7 +43,8 @@ export const AuthProvider = ({ children }) => {
         username: username.trim(),
         name: displayName,
         role: role,
-        isAuthenticated: true
+        isAuthenticated: true,
+        authMethod: 'username'
       }
       setUser(userData)
       localStorage.setItem('radiologist_user', JSON.stringify(userData))
@@ -56,6 +57,48 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const loginWithPhone = async (phoneNumber, countryCode, role) => {
+    // Simulate phone.mail API call
+    await new Promise(resolve => setTimeout(resolve, 1200))
+
+    // Validate phone number format (10 digits for India)
+    const cleanPhone = phoneNumber.replace(/\D/g, '')
+    
+    if (cleanPhone.length !== 10) {
+      return { success: false, error: 'Phone number must be 10 digits' }
+    }
+
+    // India-specific validation for +91
+    if (countryCode === '+91') {
+      const firstDigit = cleanPhone[0]
+      if (!['6', '7', '8', '9'].includes(firstDigit)) {
+        return { success: false, error: 'Indian phone numbers must start with 6, 7, 8, or 9' }
+      }
+    }
+
+    // Simulate successful phone authentication
+    const fullPhone = `${countryCode}${cleanPhone}`
+    const displayName = role === 'radiologist' 
+      ? `Dr. User (${cleanPhone.slice(-4)})` 
+      : `User (${cleanPhone.slice(-4)})`
+
+    const userData = {
+      username: fullPhone,
+      name: displayName,
+      phoneNumber: fullPhone,
+      role: role,
+      isAuthenticated: true,
+      authMethod: 'phone'
+    }
+    
+    setUser(userData)
+    localStorage.setItem('radiologist_user', JSON.stringify(userData))
+    
+    // Return redirect path based on role
+    const redirectPath = role === 'patient' ? '/patient-dashboard' : role === 'labadmin' ? '/lab-admin' : '/'
+    return { success: true, redirectPath }
+  }
+
   const logout = () => {
     setUser(null)
     localStorage.removeItem('radiologist_user')
@@ -64,6 +107,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     login,
+    loginWithPhone,
     logout,
     loading,
     isAuthenticated: !!user

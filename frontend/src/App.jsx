@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import PatientProtectedRoute from './components/PatientProtectedRoute'
 import LabAdminProtectedRoute from './components/LabAdminProtectedRoute'
 import Layout from './components/Layout'
+import Signup from './pages/Signup'
 import Login from './pages/Login'
 import Xray from './pages/Xray'
 import Reports from './pages/Reports'
@@ -19,6 +20,8 @@ export default function App() {
   return (
     <AuthProvider>
       <Routes>
+        <Route path="/" element={<Signup />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
 
         {/* Lab Admin Routes - With Lab Admin Protection, No Layout */}
@@ -44,17 +47,45 @@ export default function App() {
         <Route path="/report/:reportId/comparison" element={<ComparisonView />} />
 
         {/* Main App Routes - With Layout and Protection for Radiologists */}
-        <Route path="/*" element={
+        <Route path="/dashboard" element={
           <ProtectedRoute>
             <Layout>
-              <Routes>
-                <Route path="/" element={<Patients />} />
-                <Route path="/xray" element={<Xray />} />
-                <Route path="/reports" element={<Reports />} />
-                <Route path="/compare" element={<Compare />} />
-                <Route path="/radiologist/report/:reportId" element={<RadiologistReportView />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
+              <Patients />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/patients" element={
+          <ProtectedRoute>
+            <Layout>
+              <Patients />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/xray" element={
+          <ProtectedRoute>
+            <Layout>
+              <Xray />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/reports" element={
+          <ProtectedRoute>
+            <Layout>
+              <Reports />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/compare" element={
+          <ProtectedRoute>
+            <Layout>
+              <Compare />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/radiologist/report/:reportId" element={
+          <ProtectedRoute>
+            <Layout>
+              <RadiologistReportView />
             </Layout>
           </ProtectedRoute>
         } />
