@@ -127,6 +127,15 @@ export default function RadiologistReportView() {
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
+                    {report.comparison_findings && (
+                        <button
+                            onClick={() => navigate(`/report/${reportId}/comparison`)}
+                            className="px-3 py-1.5 text-sm bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors flex items-center gap-2"
+                        >
+                            <Activity size={14} />
+                            Comparison with past X-rays
+                        </button>
+                    )}
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${report.status === 'Final' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                         }`}>
                         {report.status}
@@ -293,25 +302,6 @@ export default function RadiologistReportView() {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Bottom Panel: Comparison Findings */}
-            <div className="h-48 bg-white border-t border-gray-200 flex-shrink-0 overflow-y-auto custom-scrollbar z-10">
-                <div className="px-6 py-4">
-                    <h3 className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
-                        <AlertCircle size={18} className="text-amber-600" />
-                        Comparison with Previous Scans
-                    </h3>
-                    <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
-                        {report.comparison_findings ? (
-                            <div className="text-sm text-gray-800 prose prose-sm max-w-none">
-                                <ReactMarkdown>{report.comparison_findings}</ReactMarkdown>
-                            </div>
-                        ) : (
-                            <p className="text-sm text-gray-500 italic">No previous scans found for comparison.</p>
-                        )}
                     </div>
                 </div>
             </div>

@@ -198,7 +198,7 @@ export default function Patients() {
                       </td>
                       <td className="px-3 py-3 text-xs text-gray-700 whitespace-nowrap">{patient.lastVisit}</td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <div className="flex items-center justify-center gap-1.5">
+                        <div className="flex items-center justify-center gap-4">
                           {patient.scanStatus === 'Ready' && (
                             <button
                               onClick={() => navigate(`/radiologist/report/${patient.reportId}`)}

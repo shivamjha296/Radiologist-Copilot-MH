@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Plus, Edit, Trash2, Users, ChevronDown, LogOut, Upload, FileText, Layout, Database, Activity, FileImage } from 'lucide-react'
+import { Search, Plus, Edit, Trash2, Users, ChevronDown, LogOut, Upload, FileText, Layout, Database, Activity, FileImage, Menu } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 
@@ -10,6 +10,7 @@ export default function LabAdminDashboard() {
   const [activeTab, setActiveTab] = useState('patients')
   const [showLogoutMenu, setShowLogoutMenu] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [sidebarOpen, setSidebarOpen] = useState(true)
 
   // Data States
   const [patients, setPatients] = useState([])
@@ -94,7 +95,7 @@ export default function LabAdminDashboard() {
   const handleAddNew = () => {
     setIsAddingNew(true)
     setEditingPatient({
-      name: '', age: '', diagnosis: '', status: 'Active', assignedTo: '', lastVisit: ''
+      name: '', age: '', phone: '', diagnosis: '', status: 'Active', assignedTo: '', lastVisit: ''
     })
   }
 
@@ -192,109 +193,171 @@ export default function LabAdminDashboard() {
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col z-20 shadow-sm">
-        <div className="p-6 flex items-center gap-3 border-b border-gray-100">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm">
-            <Activity className="text-white" size={18} />
+      <aside className={`bg-slate-800 border-r border-slate-700 flex flex-col z-20 shadow-xl transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-0 overflow-hidden'}`}>
+        <div className="p-4 border-b border-slate-700 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center shadow-md">
+              <Activity className="text-white" size={20} />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-white">Lab Admin</div>
+              <div className="text-xs text-slate-300">Patient Management</div>
+            </div>
           </div>
-          <span className="text-lg font-bold text-gray-800">Lab Admin</span>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           <button
             onClick={() => setActiveTab('patients')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'patients' ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50'
+            className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'patients' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-700 hover:text-white'
               }`}
           >
-            <Users size={18} />
+            <Users size={20} />
             Patients
           </button>
           <button
             onClick={() => setActiveTab('scans')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'scans' ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50'
+            className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'scans' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-700 hover:text-white'
               }`}
           >
-            <FileImage size={18} />
+            <FileImage size={20} />
             Scans
           </button>
           <button
             onClick={() => setActiveTab('reports')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'reports' ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50'
+            className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'reports' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-700 hover:text-white'
               }`}
           >
-            <FileText size={18} />
+            <FileText size={20} />
             Reports
           </button>
         </nav>
 
-        <div className="p-4 border-t border-gray-100">
-          <div className="flex items-center gap-3 px-4 py-3">
-            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">
+        <div className="p-4 border-t border-slate-700 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-teal-600 shadow-md text-white flex items-center justify-center font-medium">
               {user?.name?.charAt(0) || 'A'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{user?.name || 'Admin'}</p>
-              <p className="text-xs text-gray-500">Lab Administrator</p>
+              <p className="text-sm font-medium text-white truncate">{user?.name || 'Admin'}</p>
+              <p className="text-xs text-slate-400">Lab Administrator</p>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="w-full mt-2 flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-          >
-            <LogOut size={16} />
-            Logout
-          </button>
         </div>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <header className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800 capitalize">{activeTab} Database</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage and view all {activeTab} records</p>
-          </div>
+        <header className="bg-gray-100 shadow-md border-b border-gray-300 flex-shrink-0">
+          <div className="px-6 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors"
+                title={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+              >
+                <Menu size={18} className="text-gray-700" />
+              </button>
+              <div>
+                <div className="text-lg font-bold text-gray-800 capitalize">{activeTab} Database</div>
+                <div className="text-xs text-gray-500">Manage and view all {activeTab} records</div>
+              </div>
+            </div>
 
-          {activeTab === 'patients' && (
-            <button
-              onClick={handleAddNew}
-              className="px-4 py-2 bg-teal-600 text-white rounded-lg flex items-center gap-2 hover:bg-teal-700 transition font-medium shadow-sm"
-            >
-              <Plus size={18} />
-              New Patient
-            </button>
-          )}
+            <div className="flex items-center gap-4">
+              {/* User Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowLogoutMenu(!showLogoutMenu)}
+                  className="flex items-center gap-3 hover:bg-gray-200 px-3 py-2 rounded-lg transition-colors"
+                >
+                  <div className="text-sm text-gray-700 font-medium">{user?.name || 'Admin'}</div>
+                  <div className="w-9 h-9 rounded-full bg-teal-600 shadow-md flex items-center justify-center text-white font-medium text-sm">
+                    {user?.name?.charAt(0) || 'A'}
+                  </div>
+                  <ChevronDown size={16} className="text-gray-600" />
+                </button>
+
+                {showLogoutMenu && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-10" 
+                      onClick={() => setShowLogoutMenu(false)}
+                    />
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-slate-200 py-1 z-20">
+                      <div className="px-4 py-2 border-b border-slate-200">
+                        <div className="text-sm font-medium text-slate-800">{user?.name}</div>
+                        <div className="text-xs text-slate-500">Lab Administrator</div>
+                      </div>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                      >
+                        <LogOut size={16} />
+                        Logout
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
         </header>
 
         {/* Content Area */}
         <div className="flex-1 overflow-auto p-8">
-          {/* Search */}
-          <div className="mb-6 max-w-md">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="text"
-                placeholder={`Search ${activeTab}...`}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+          {/* Search and New Patient Button */}
+          {activeTab === 'patients' && (
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                  type="text"
+                  placeholder="Search patients..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <button
+                onClick={handleAddNew}
+                className="px-4 py-2 bg-teal-600 text-white rounded-lg flex items-center gap-2 hover:bg-teal-700 transition font-medium shadow-sm"
+              >
+                <Plus size={18} />
+                New Patient
+              </button>
             </div>
-          </div>
+          )}
+
+          {activeTab !== 'patients' && (
+            <div className="mb-6 max-w-md">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                  type="text"
+                  placeholder={`Search ${activeTab}...`}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Views */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             {activeTab === 'patients' && (
               <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-gray-800 text-white">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Patient Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Age</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Visit</th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Patient Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Age</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Phone</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Last Visit</th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -303,16 +366,37 @@ export default function LabAdminDashboard() {
                       <td className="px-6 py-4 text-sm font-medium text-gray-900">{patient.id}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{patient.name}</td>
                       <td className="px-6 py-4 text-sm text-gray-500">{patient.age}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{patient.phone || 'N/A'}</td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(patient.status)}`}>
                           {patient.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">{patient.lastVisit}</td>
-                      <td className="px-6 py-4 text-right space-x-2">
-                        <button onClick={() => handleUploadClick(patient)} className="text-blue-600 hover:text-blue-800 text-sm font-medium">Upload</button>
-                        <button onClick={() => handleEdit(patient)} className="text-teal-600 hover:text-teal-800 text-sm font-medium">Edit</button>
-                        <button onClick={() => handleDelete(patient.id)} className="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
+                      <td className="px-8 py-4">
+                        <div className="flex items-center justify-center gap-4">
+                          <button
+                            onClick={() => handleUploadClick(patient)}
+                            className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center gap-1 transition text-xs font-medium whitespace-nowrap"
+                          >
+                            <Upload size={13} />
+                            Upload
+                          </button>
+                          <button
+                            onClick={() => handleEdit(patient)}
+                            className="px-2.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded flex items-center gap-1 transition text-xs font-medium whitespace-nowrap"
+                          >
+                            <Edit size={13} />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(patient.id)}
+                            className="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded flex items-center gap-1 transition text-xs font-medium whitespace-nowrap"
+                          >
+                            <Trash2 size={13} />
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -322,14 +406,14 @@ export default function LabAdminDashboard() {
 
             {activeTab === 'scans' && (
               <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-gray-800 text-white">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Scan ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Patient</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Body Part</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Modality</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">View</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Scan ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Patient</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Body Part</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Modality</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider">View</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -354,14 +438,14 @@ export default function LabAdminDashboard() {
 
             {activeTab === 'reports' && (
               <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-gray-800 text-white">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Report ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Patient</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Radiologist</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Report ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Patient</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Radiologist</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -413,6 +497,13 @@ export default function LabAdminDashboard() {
                 type="number"
                 value={editingPatient.age}
                 onChange={e => setEditingPatient({ ...editingPatient, age: e.target.value })}
+                className="w-full border p-2 rounded"
+              />
+              <input
+                placeholder="Phone Number (+1234567890)"
+                type="tel"
+                value={editingPatient.phone}
+                onChange={e => setEditingPatient({ ...editingPatient, phone: e.target.value })}
                 className="w-full border p-2 rounded"
               />
               <input

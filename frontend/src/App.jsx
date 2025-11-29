@@ -13,6 +13,7 @@ import PatientDashboard from './pages/PatientDashboard'
 import PatientReportView from './pages/PatientReportView'
 import LabAdminDashboard from './pages/LabAdminDashboard'
 import RadiologistReportView from './pages/RadiologistReportView'
+import ComparisonView from './pages/ComparisonView'
 
 export default function App() {
   return (
@@ -38,6 +39,9 @@ export default function App() {
             <PatientReportView />
           </PatientProtectedRoute>
         } />
+
+        {/* Comparison View - Standalone page that can be opened in new window */}
+        <Route path="/report/:reportId/comparison" element={<ComparisonView />} />
 
         {/* Main App Routes - With Layout and Protection for Radiologists */}
         <Route path="/*" element={
