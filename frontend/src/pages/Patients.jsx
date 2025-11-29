@@ -106,6 +106,7 @@ export default function Patients() {
     setEditingPatient({
       name: '',
       age: '',
+      phone_number: '',
       diagnosis: '',
       status: 'Active',
       assignedTo: '',
@@ -171,8 +172,10 @@ export default function Patients() {
                   <tr>
                     <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">ID</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Patient Name</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Patient Name</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Age</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Diagnosis</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Phone</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Status</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Scan Status</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Last Visit</th>
@@ -186,6 +189,7 @@ export default function Patients() {
                       <td className="px-3 py-3 text-xs text-gray-900 whitespace-nowrap">{patient.name}</td>
                       <td className="px-3 py-3 text-xs text-gray-700 whitespace-nowrap">{patient.age}</td>
                       <td className="px-3 py-3 text-xs text-gray-900 whitespace-nowrap">{patient.diagnosis}</td>
+                      <td className="px-3 py-3 text-xs text-gray-700 whitespace-nowrap">{patient.phone_number || 'N/A'}</td>
                       <td className="px-3 py-3 whitespace-nowrap">
                         <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(patient.status)}`}>
                           {patient.status}
@@ -276,6 +280,17 @@ export default function Patients() {
                   onChange={(e) => setEditingPatient({ ...editingPatient, age: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="45"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <input
+                  type="tel"
+                  value={editingPatient.phone_number || ''}
+                  onChange={(e) => setEditingPatient({ ...editingPatient, phone_number: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="+1234567890"
                 />
               </div>
 
