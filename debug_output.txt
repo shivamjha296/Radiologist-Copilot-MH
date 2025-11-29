@@ -1,4 +1,0 @@
-All Scans (Newest First):
-Scan 1 | 2025-11-29 06:07:00.696478 | Report 1 (Final)
-Scan 7 | 2025-11-29 01:24:46.123899 | Report 6 (Draft)
-Scan 6 | 2025-11-29 01:23:20.220273 | Report 5 (Draft)
