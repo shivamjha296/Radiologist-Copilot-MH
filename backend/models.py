@@ -4,9 +4,10 @@ Supports vector embeddings via pgvector extension
 """
 from datetime import datetime
 from typing import Optional, List
-from sqlalchemy import String, Integer, Text, DateTime, ForeignKey, JSON
+from sqlalchemy import String, Integer, Text, DateTime, ForeignKey
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-# from pgvector.sqlalchemy import Vector
+from pgvector.sqlalchemy import Vector
 
 
 class Base(DeclarativeBase):
@@ -24,6 +25,8 @@ class Patient(Base):
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     age: Mapped[int] = mapped_column(Integer, nullable=False)
     gender: Mapped[str] = mapped_column(String(20), nullable=False)
+    phone_number: Mapped[Optional[str]] = mapped_column(String(20), nullable=True,
+                                                          comment="Patient contact number")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
     # Relationships
@@ -89,14 +92,16 @@ class Report(Base):
     scan_id: Mapped[int] = mapped_column(Integer, ForeignKey("scans.id", ondelete="CASCADE"), 
                                           nullable=False, index=True)
     radiologist_name: Mapped[str] = mapped_column(String(200), nullable=False)
+    radiologist_phone: Mapped[Optional[str]] = mapped_column(String(20), nullable=True,
+                                                               comment="Radiologist contact number")
     full_text: Mapped[str] = mapped_column(Text, nullable=False, 
                                             comment="Complete radiological report")
     impression: Mapped[str] = mapped_column(Text, nullable=False, 
                                              comment="Summary and conclusion")
-    ner_tags: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True, 
+    ner_tags: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True, 
                                                        comment="Named Entity Recognition tags (JSONB)")
-    # embedding: Mapped[Optional[List[float]]] = mapped_column(Vector(1536), nullable=True, 
-    #                                                            comment="Text embedding for semantic search")
+    embedding: Mapped[Optional[List[float]]] = mapped_column(Vector(1536), nullable=True, 
+                                                               comment="Text embedding for semantic search")
 
     # Relationships
     scan: Mapped["Scan"] = relationship("Scan", back_populates="reports")
