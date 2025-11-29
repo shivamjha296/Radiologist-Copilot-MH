@@ -5,7 +5,7 @@ PostgreSQL with pgvector extension for semantic search
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Generator
 
@@ -15,6 +15,10 @@ load_dotenv(dotenv_path=env_path)
 
 # Database connection string from environment variable
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://admin:radpass@localhost:5432/radiology_db")
+
+# Fix Render database URL (postgres:// → postgresql://)
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 # Create engine with connection pooling and SSL support
 engine = create_engine(
@@ -67,3 +71,33 @@ def get_db_session() -> Session:
             db.close()
     """
     return SessionLocal()
+
+
+def init_db():
+    """
+    Initialize the database with pgvector extension and create all tables
+    Call this on application startup to ensure database is ready
+    
+    Steps:
+    1. Enable pgvector extension (if not already enabled)
+    2. Create all tables from SQLAlchemy models
+    
+    Usage:
+        from database import init_db
+        init_db()
+    """
+    from models import Base  # Import here to avoid circular dependency
+    
+    try:
+        # Step A: Enable pgvector extension
+        with engine.begin() as conn:
+            conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
+            print("✅ pgvector extension enabled")
+        
+        # Step B: Create all tables from models
+        Base.metadata.create_all(bind=engine)
+        print("✅ All tables created/updated successfully")
+        
+    except Exception as e:
+        print(f"❌ Database initialization error: {e}")
+        raise
