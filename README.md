@@ -5,10 +5,26 @@
 [![React](https://img.shields.io/badge/React-18.2.0-61DAFB?logo=react)](https://react.dev/)
 [![Python](https://img.shields.io/badge/Python-3.9+-3776AB?logo=python)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
+[![WhatsApp](https://img.shields.io/badge/WhatsApp-Integration-25D366?logo=whatsapp)](https://www.twilio.com/whatsapp)
 
-**Multi-Agent AI System for Autonomous Medical Imaging Analysis**
+**Multi-Agent AI System for Autonomous Medical Imaging Analysis + WhatsApp Patient Communication**
 
 </div>
+
+---
+
+## 🆕 NEW: WhatsApp Integration
+
+🎉 **Reports are now automatically sent to patients via WhatsApp!**
+
+✨ **Key Features:**
+- 📱 **Auto-Send Reports** - Medical reports delivered instantly to patient's WhatsApp
+- 💬 **AI Chat Support** - Patients can ask questions and get instant AI-powered answers
+- 🤖 **Smart Responses** - Context-aware replies based on their specific medical report
+- 📊 **Conversation History** - All chats saved for doctor review
+- 🌐 **Multi-AI Support** - Google Gemini, OpenAI, or rule-based fallback
+
+**📚 [Complete Setup Guide →](WHATSAPP_SETUP.md)**
 
 ---
 
@@ -156,6 +172,16 @@ Radiologist-Copilot/
 🧠 Medical entity extraction  
 🔄 Multi-temporal scan comparison  
 🔐 Role-based access control
+
+### 📱 WhatsApp Patient Communication (NEW!)
+💬 **Auto-send reports** to patient's WhatsApp number  
+🤖 **AI-powered chatbot** answers patient questions 24/7  
+📋 **Context-aware responses** based on specific medical findings  
+💾 **Conversation history** stored for doctor review  
+🌍 **Multi-language support** (coming soon)  
+🔒 **Secure & HIPAA-compliant** messaging
+
+**[Setup WhatsApp Integration →](WHATSAPP_SETUP.md)**
 
 ### Production Ready
 🎨 Professional medical UI with glassmorphism  
