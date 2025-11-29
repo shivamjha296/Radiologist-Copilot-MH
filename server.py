@@ -497,6 +497,12 @@ def update_report(report_id: int, report_update: ReportUpdate, db: Session = Dep
                 # Combine full text and impression for PDF
                 pdf_content = f"# Clinical Indication\n{report.scan.body_part} X-ray\n\n# Findings\n{report.full_text}\n\n# Impression\n{report.impression}"
                 
+                # Debug: Print first 200 chars of content
+                print(f"PDF Content preview: {pdf_content[:200]}...")
+                
+                # Ensure reports directory exists
+                os.makedirs("reports", exist_ok=True)
+                
                 generate_pdf_report(patient_details, pdf_content, pdf_path)
                 
                 # 3. Upload PDF to Cloudinary

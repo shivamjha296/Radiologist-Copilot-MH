@@ -172,11 +172,8 @@ export default function Patients() {
                   <tr>
                     <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">ID</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Patient Name</th>
-                    <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Patient Name</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Age</th>
-                    <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Diagnosis</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Phone</th>
-                    <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Status</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Scan Status</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Last Visit</th>
                     <th className="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Actions</th>
@@ -188,13 +185,7 @@ export default function Patients() {
                       <td className="px-3 py-3 text-xs font-medium text-gray-900 whitespace-nowrap">{patient.id}</td>
                       <td className="px-3 py-3 text-xs text-gray-900 whitespace-nowrap">{patient.name}</td>
                       <td className="px-3 py-3 text-xs text-gray-700 whitespace-nowrap">{patient.age}</td>
-                      <td className="px-3 py-3 text-xs text-gray-900 whitespace-nowrap">{patient.diagnosis}</td>
                       <td className="px-3 py-3 text-xs text-gray-700 whitespace-nowrap">{patient.phone_number || 'N/A'}</td>
-                      <td className="px-3 py-3 whitespace-nowrap">
-                        <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(patient.status)}`}>
-                          {patient.status}
-                        </span>
-                      </td>
                       <td className="px-3 py-3 whitespace-nowrap">
                         <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getScanStatusColor(patient.scanStatus)}`}>
                           {patient.scanStatus || 'None'}

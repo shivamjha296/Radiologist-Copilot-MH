@@ -5,6 +5,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib.units import inch
 import os
 from datetime import datetime
+from xml.sax.saxutils import escape
 
 def generate_pdf_report(patient_details, report_content, output_path):
     """
@@ -68,24 +69,51 @@ def generate_pdf_report(patient_details, report_content, output_path):
         spaceAfter=10
     )
     
+    def clean_text_for_pdf(text):
+        """Clean and escape text for PDF generation, handling markdown and special chars"""
+        # First, escape XML special characters to prevent parsing errors
+        text = escape(text)
+        
+        # Now safely replace markdown bold with HTML bold
+        # Process each bold segment individually to handle nested tags properly
+        result = []
+        parts = text.split('**')
+        in_bold = False
+        
+        for i, part in enumerate(parts):
+            if i == 0:
+                # First part is never bold
+                result.append(part)
+            else:
+                # Alternate between bold and not bold
+                if in_bold:
+                    result.append('</b>')
+                    result.append(part)
+                else:
+                    result.append('<b>')
+                    result.append(part)
+                in_bold = not in_bold
+        
+        # Close any open bold tags
+        if in_bold:
+            result.append('</b>')
+        
+        return ''.join(result)
+    
     for line in report_content.split('\n'):
         if line.strip():
             if line.startswith('#'):
-                # Handle markdown headers roughly
-                story.append(Paragraph(line.replace('#', '').strip(), styles['Heading3']))
-            elif line.startswith('-') or line.startswith('*'):
-                # Handle bullets
-                clean_line = line.strip('-* ')
-                # Replace **bold** with <b>bold</b> for ReportLab
-                clean_line = clean_line.replace('**', '<b>', 1).replace('**', '</b>', 1)
-                while '**' in clean_line: # Handle multiple bold segments
-                     clean_line = clean_line.replace('**', '<b>', 1).replace('**', '</b>', 1)
+                # Handle markdown headers
+                clean_line = clean_text_for_pdf(line.replace('#', '').strip())
+                story.append(Paragraph(clean_line, styles['Heading3']))
+            elif line.startswith('-') or line.startswith('*') or line.startswith('•'):
+                # Handle bullets - remove bullet markers and add our own
+                clean_line = line.strip('-*• ')
+                clean_line = clean_text_for_pdf(clean_line)
                 story.append(Paragraph(f"• {clean_line}", content_style))
             else:
-                # Handle bold in normal text
-                clean_line = line
-                while '**' in clean_line:
-                     clean_line = clean_line.replace('**', '<b>', 1).replace('**', '</b>', 1)
+                # Normal text
+                clean_line = clean_text_for_pdf(line)
                 story.append(Paragraph(clean_line, content_style))
                 
     story.append(Spacer(1, 30))
